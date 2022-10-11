@@ -1,13 +1,20 @@
-# Example Implementations
+# Offset Helper
 
-A collection of Solidity contract examples that integrate with or demonstrate the use of Toucan's contracts and infrastructure. Some of these may be used in production.
+This contract has the purpose to simplify the carbon offsetting process.
 
-## Contracts
+What it does in more exact terms is it abstracts the process of retiring TCO2, which normally looks like so:
+
+- user exchanges USDC for BCT/NCT tokens at one of the DEXs (Uniswap, Sushiswap, etc. depending on network)
+- user interacts with the BCT/NCT token contract to redeem the tokens for TCO2
+- user interacts with the TCO2 token contract to retire the TCO2
+
+With the OffsetHelper contract, the user only needs to interact with the OffsetHelper contract, which will take care of the rest in a single transaction.
+
+## Deployments
 
 | Contract     | Polygon                                                                                                                  | Mumbai                                                                                                                          |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | OffsetHelper | [0xFAFcCd01C395e4542BEed819De61f02f5562fAEa](https://polygonscan.com/address/0xFAFcCd01C395e4542BEed819De61f02f5562fAEa) | [0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7](https://mumbai.polygonscan.com/address/0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7) |
-| Swapper      | [0x1C7f2CCa1Cd52Aae8A25B7BA4b7800c153F48D70](https://polygonscan.com/address/0x1C7f2CCa1Cd52Aae8A25B7BA4b7800c153F48D70) | [0xDd052AcA9AC1492a8b4F1432B68f11989903dE4d](https://mumbai.polygonscan.com/address/0xDd052AcA9AC1492a8b4F1432B68f11989903dE4d) |
 
 ## OffsetHelper
 

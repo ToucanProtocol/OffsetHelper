@@ -9,7 +9,6 @@ import "solidity-coverage";
 import "solidity-docgen";
 import { tokens } from "./utils/tokens";
 import addresses, { mumbaiAddresses } from "./utils/addresses";
-import { network } from "hardhat";
 import { boolean } from "hardhat/internal/core/params/argumentTypes";
 import { relative } from "path";
 
@@ -64,51 +63,6 @@ task("deployOffsetHelper", "Deploys and verifies OffsetHelper")
       console.log(
         `OffsetHelper verified on ${hre.network.name} to:`,
         oh.address
-      );
-    }
-  });
-
-task("deploySwapper", "Deploys and verifies Swapper")
-  .addOptionalParam(
-    "verify",
-    "Set false to not verify the Swapper after deployment",
-    true,
-    boolean
-  )
-  .setAction(async (taskArgs, hre) => {
-    const Swapper = await hre.ethers.getContractFactory("Swapper");
-
-    const addressesToUse =
-      hre.network.name == "mumbai" ? mumbaiAddresses : addresses;
-
-    const swapper = await Swapper.deploy(tokens, [
-      addressesToUse.bct,
-      addressesToUse.nct,
-      addressesToUse.usdc,
-      addressesToUse.weth,
-      addressesToUse.wmatic,
-    ]);
-    await swapper.deployed();
-    console.log(`Swapper deployed on ${hre.network.name} to:`, swapper.address);
-
-    if (taskArgs.verify === true) {
-      await swapper.deployTransaction.wait(5);
-      await hre.run("verify:verify", {
-        address: swapper.address,
-        constructorArguments: [
-          tokens,
-          [
-            addressesToUse.bct,
-            addressesToUse.nct,
-            addressesToUse.usdc,
-            addressesToUse.weth,
-            addressesToUse.wmatic,
-          ],
-        ],
-      });
-      console.log(
-        `Swapper verified on ${hre.network.name} to:`,
-        swapper.address
       );
     }
   });
