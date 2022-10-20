@@ -1,4 +1,7 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-FileCopyrightText: 2022 Toucan Labs
+//
+// SPDX-License-Identifier: GPL-3.0
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
