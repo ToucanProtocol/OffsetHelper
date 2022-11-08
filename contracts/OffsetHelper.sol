@@ -311,6 +311,11 @@ contract OffsetHelper is OffsetHelperStorage {
             block.timestamp
         );
 
+        // remove remaining approval if less input token was consumed
+        if (amounts[0] < amountIn) {
+            IERC20(_fromToken).approve(sushiRouterAddress, 0);
+        }
+
         // update balances
         balances[msg.sender][_toToken] += _toAmount;
     }
