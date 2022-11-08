@@ -264,15 +264,9 @@ contract OffsetHelper is OffsetHelperStorage {
             "Token not eligible"
         );
 
-        // instantiate router
-        IUniswapV2Router02 routerSushi = IUniswapV2Router02(sushiRouterAddress);
-
-        // generate path
-        address[] memory path = generatePath(_fromToken, _toToken);
-
-        // get expected amountsIn
-        uint256[] memory amountsIn = routerSushi.getAmountsIn(_toAmount, path);
-        return amountsIn[0];
+        (, uint256[] memory amounts) =
+            calculateFixedOutSwap(_fromToken, _toToken, _toAmount);
+        return amounts[0];
     }
 
     /**
@@ -293,32 +287,25 @@ contract OffsetHelper is OffsetHelperStorage {
             "Token not eligible"
         );
 
-        // instantiate router
-        IUniswapV2Router02 routerSushi = IUniswapV2Router02(sushiRouterAddress);
-
-        // generate path
-        address[] memory path = generatePath(_fromToken, _toToken);
-
-        // estimate amountsIn
-        uint256[] memory expectedAmountsIn = routerSushi.getAmountsIn(
-            _toAmount,
-            path
-        );
+        // calculate path & amounts
+        (address[] memory path, uint256[] memory expAmounts) =
+            calculateFixedOutSwap(_fromToken, _toToken, _toAmount);
+        uint256 amountIn = expAmounts[0];
 
         // transfer tokens
         IERC20(_fromToken).safeTransferFrom(
             msg.sender,
             address(this),
-            expectedAmountsIn[0]
+            amountIn
         );
 
         // approve router
-        IERC20(_fromToken).approve(sushiRouterAddress, expectedAmountsIn[0]);
+        IERC20(_fromToken).approve(sushiRouterAddress, amountIn);
 
         // swap
-        routerSushi.swapTokensForExactTokens(
+        uint256[] memory amounts = routerSushi().swapTokensForExactTokens(
             _toAmount,
-            expectedAmountsIn[0],
+            amountIn, // max. input amount
             path,
             address(this),
             block.timestamp
@@ -352,22 +339,15 @@ contract OffsetHelper is OffsetHelperStorage {
         // check token
         require(isRedeemable(_toToken), "Token not eligible");
 
-        // instantiate router
-        IUniswapV2Router02 routerSushi = IUniswapV2Router02(sushiRouterAddress);
-
-        // generate path
-        address[] memory path = generatePath(
-            eligibleTokenAddresses["WMATIC"],
-            _toToken
-        );
-
-        // get expectedAmountsIn
-        uint256[] memory amounts = routerSushi.getAmountsIn(_toAmount, path);
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        (, uint256[] memory amounts) =
+            calculateFixedOutSwap(fromToken, _toToken, _toAmount);
         return amounts[0];
     }
 
     /**
-     * @notice Swap MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap
+     * @notice Swap MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap.
+     * Remaining MATIC that was not consumed by the swap is returned.
      * @param _toToken Token to swap for (will be held within contract)
      * @param _toAmount Amount of NCT / BCT wanted
      */
@@ -375,32 +355,22 @@ contract OffsetHelper is OffsetHelperStorage {
         // check tokens
         require(isRedeemable(_toToken), "Token not eligible");
 
-        // instantiate router
-        IUniswapV2Router02 routerSushi = IUniswapV2Router02(sushiRouterAddress);
-
-        // generate path
-        address[] memory path = generatePath(
-            eligibleTokenAddresses["WMATIC"],
-            _toToken
-        );
-
-        // estimate amountsIn
-        uint256[] memory expectedAmountsIn = routerSushi.getAmountsIn(
-            _toAmount,
-            path
-        );
+        // calculate path & amounts
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        (address[] memory path, uint256[] memory expAmounts) =
+            calculateFixedOutSwap(fromToken, _toToken, _toAmount);
 
         // check user sent enough ETH/MATIC
-        require(msg.value >= expectedAmountsIn[0], "Didn't send enough MATIC");
+        require(msg.value >= expAmounts[0], "Didn't send enough MATIC");
 
         // swap
-        uint256[] memory amountsIn = routerSushi.swapETHForExactTokens{
+        uint256[] memory amounts = routerSushi().swapETHForExactTokens{
             value: msg.value
         }(_toAmount, path, address(this), block.timestamp);
 
         // send surplus back
-        if (msg.value > amountsIn[0]) {
-            uint256 leftoverETH = msg.value - amountsIn[0];
+        if (msg.value > amounts[0]) {
+            uint256 leftoverETH = msg.value - amounts[0];
             (bool success, ) = msg.sender.call{value: leftoverETH}(
                 new bytes(0)
             );
@@ -502,6 +472,23 @@ contract OffsetHelper is OffsetHelperStorage {
         }
     }
 
+    function calculateFixedOutSwap(
+        address _fromToken,
+        address _toToken,
+        uint256 _toAmount)
+        internal view
+        returns (address[] memory path, uint256[] memory amounts)
+    {
+        path = generatePath(_fromToken, _toToken);
+        uint256 len = path.length;
+
+        amounts = routerSushi().getAmountsIn(_toAmount, path);
+
+        // sanity check arrays
+        require(len == amounts.length, "Arrays unequal");
+        require(_toAmount == amounts[len - 1], "Output amount mismatch");
+    }
+
     function generatePath(address _fromToken, address _toToken)
         internal
         view
@@ -519,6 +506,10 @@ contract OffsetHelper is OffsetHelperStorage {
             path[2] = _toToken;
             return path;
         }
+    }
+
+    function routerSushi() internal view returns (IUniswapV2Router02) {
+        return IUniswapV2Router02(sushiRouterAddress);
     }
 
     // ----------------------------------------
