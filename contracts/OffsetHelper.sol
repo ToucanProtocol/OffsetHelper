@@ -92,6 +92,18 @@ contract OffsetHelper is OffsetHelperStorage {
         uint256[] amounts
     );
 
+    modifier onlyRedeemable(address _token) {
+        require(isRedeemable(_token), "Token not redeemable");
+
+        _;
+    }
+
+    modifier onlySwappable(address _token) {
+        require(isSwappable(_token), "Token not swappable");
+
+        _;
+    }
+
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
@@ -223,7 +235,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _erc20Address address of token to be checked
      * @return True if the specified address can be used in a swap
      */
-    function isSwapable(address _erc20Address) private view returns (bool) {
+    function isSwappable(address _erc20Address) private view returns (bool) {
         if (_erc20Address == eligibleTokenAddresses["USDC"]) return true;
         if (_erc20Address == eligibleTokenAddresses["WETH"]) return true;
         if (_erc20Address == eligibleTokenAddresses["WMATIC"]) return true;
@@ -257,13 +269,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address _fromToken,
         address _toToken,
         uint256 _toAmount
-    ) public view returns (uint256) {
-        // check tokens
-        require(
-            isSwapable(_fromToken) && isRedeemable(_toToken),
-            "Token not eligible"
-        );
-
+    ) public view onlySwappable(_fromToken) onlyRedeemable(_toToken) returns (uint256) {
         (, uint256[] memory amounts) =
             calculateFixedOutSwap(_fromToken, _toToken, _toAmount);
         return amounts[0];
@@ -280,13 +286,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address _fromToken,
         address _toToken,
         uint256 _toAmount
-    ) public {
-        // check tokens
-        require(
-            isSwapable(_fromToken) && isRedeemable(_toToken),
-            "Token not eligible"
-        );
-
+    ) public onlySwappable(_fromToken) onlyRedeemable(_toToken) {
         // calculate path & amounts
         (address[] memory path, uint256[] memory expAmounts) =
             calculateFixedOutSwap(_fromToken, _toToken, _toAmount);
@@ -339,11 +339,9 @@ contract OffsetHelper is OffsetHelperStorage {
     function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
         public
         view
+        onlyRedeemable(_toToken)
         returns (uint256)
     {
-        // check token
-        require(isRedeemable(_toToken), "Token not eligible");
-
         address fromToken = eligibleTokenAddresses["WMATIC"];
         (, uint256[] memory amounts) =
             calculateFixedOutSwap(fromToken, _toToken, _toAmount);
@@ -356,10 +354,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _toToken Token to swap for (will be held within contract)
      * @param _toAmount Amount of NCT / BCT wanted
      */
-    function swap(address _toToken, uint256 _toAmount) public payable {
-        // check tokens
-        require(isRedeemable(_toToken), "Token not eligible");
-
+    function swap(address _toToken, uint256 _toAmount) public payable onlyRedeemable(_toToken) {
         // calculate path & amounts
         address fromToken = eligibleTokenAddresses["WMATIC"];
         (address[] memory path, uint256[] memory expAmounts) =
@@ -404,9 +399,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Allow users to deposit BCT / NCT.
      * @dev Needs to be approved
      */
-    function deposit(address _erc20Addr, uint256 _amount) public {
-        require(isRedeemable(_erc20Addr), "Token not eligible");
-
+    function deposit(address _erc20Addr, uint256 _amount) public onlyRedeemable(_erc20Addr) {
         IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender][_erc20Addr] += _amount;
     }
@@ -421,10 +414,9 @@ contract OffsetHelper is OffsetHelperStorage {
      */
     function autoRedeem(address _fromToken, uint256 _amount)
         public
+        onlyRedeemable(_fromToken)
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
-        require(isRedeemable(_fromToken), "Token not eligible");
-
         require(
             balances[msg.sender][_fromToken] >= _amount,
             "Insufficient NCT/BCT balance"
