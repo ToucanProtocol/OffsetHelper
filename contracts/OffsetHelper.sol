@@ -249,14 +249,14 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _fromToken The address of the ERC20 token used for the swap
      * @param _toToken The address of the pool token to swap for,
      * for example, NCT or BCT
-     * @param _amount The desired amount of pool token to receive
+     * @param _toAmount The desired amount of pool token to receive
      * @return amountsIn The amount of the ERC20 token required in order to
      * swap for the specified amount of the pool token
      */
     function calculateNeededTokenAmount(
         address _fromToken,
         address _toToken,
-        uint256 _amount
+        uint256 _toAmount
     ) public view returns (uint256) {
         // check tokens
         require(
@@ -271,7 +271,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address[] memory path = generatePath(_fromToken, _toToken);
 
         // get expected amountsIn
-        uint256[] memory amountsIn = routerSushi.getAmountsIn(_amount, path);
+        uint256[] memory amountsIn = routerSushi.getAmountsIn(_toAmount, path);
         return amountsIn[0];
     }
 
@@ -280,12 +280,12 @@ contract OffsetHelper is OffsetHelperStorage {
      * @dev Needs to be approved on the client side
      * @param _fromToken The ERC20 oken to deposit and swap
      * @param _toToken The token to swap for (will be held within contract)
-     * @param _amount The required amount of the Toucan pool token (NCT/BCT)
+     * @param _toAmount The required amount of the Toucan pool token (NCT/BCT)
      */
     function swap(
         address _fromToken,
         address _toToken,
-        uint256 _amount
+        uint256 _toAmount
     ) public {
         // check tokens
         require(
@@ -301,7 +301,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // estimate amountsIn
         uint256[] memory expectedAmountsIn = routerSushi.getAmountsIn(
-            _amount,
+            _toAmount,
             path
         );
 
@@ -317,7 +317,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // swap
         routerSushi.swapTokensForExactTokens(
-            _amount,
+            _toAmount,
             expectedAmountsIn[0],
             path,
             address(this),
@@ -325,7 +325,7 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // update balances
-        balances[msg.sender][_toToken] += _amount;
+        balances[msg.sender][_toToken] += _toAmount;
     }
 
     // apparently I need a fallback and a receive method to fix the situation where transfering dust MATIC
@@ -340,11 +340,11 @@ contract OffsetHelper is OffsetHelperStorage {
      *
      * @param _toToken The address of the pool token to swap for, for
      * example, NCT or BCT
-     * @param _amount The desired amount of pool token to receive
+     * @param _toAmount The desired amount of pool token to receive
      * @return amounts The amount of MATIC required in order to swap for
      * the specified amount of the pool token
      */
-    function calculateNeededETHAmount(address _toToken, uint256 _amount)
+    function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
         public
         view
         returns (uint256)
@@ -362,16 +362,16 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // get expectedAmountsIn
-        uint256[] memory amounts = routerSushi.getAmountsIn(_amount, path);
+        uint256[] memory amounts = routerSushi.getAmountsIn(_toAmount, path);
         return amounts[0];
     }
 
     /**
      * @notice Swap MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap
      * @param _toToken Token to swap for (will be held within contract)
-     * @param _amount Amount of NCT / BCT wanted
+     * @param _toAmount Amount of NCT / BCT wanted
      */
-    function swap(address _toToken, uint256 _amount) public payable {
+    function swap(address _toToken, uint256 _toAmount) public payable {
         // check tokens
         require(isRedeemable(_toToken), "Token not eligible");
 
@@ -386,7 +386,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // estimate amountsIn
         uint256[] memory expectedAmountsIn = routerSushi.getAmountsIn(
-            _amount,
+            _toAmount,
             path
         );
 
@@ -396,7 +396,7 @@ contract OffsetHelper is OffsetHelperStorage {
         // swap
         uint256[] memory amountsIn = routerSushi.swapETHForExactTokens{
             value: msg.value
-        }(_amount, path, address(this), block.timestamp);
+        }(_toAmount, path, address(this), block.timestamp);
 
         // send surplus back
         if (msg.value > amountsIn[0]) {
@@ -409,7 +409,7 @@ contract OffsetHelper is OffsetHelperStorage {
         }
 
         // update balances
-        balances[msg.sender][_toToken] += _amount;
+        balances[msg.sender][_toToken] += _toAmount;
     }
 
     /**
