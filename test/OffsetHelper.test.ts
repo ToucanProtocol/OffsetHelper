@@ -3,29 +3,35 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { formatEther, parseEther, parseUnits } from "ethers/lib/utils";
 
-import * as hardhatContracts from "../utils/toucanContracts.json";
-import * as poolContract from "../artifacts/contracts/interfaces/IToucanPoolToken.sol/IToucanPoolToken.json";
 import {
+  IERC20,
+  IERC20__factory,
+  IWETH,
+  IWETH__factory,
   IToucanPoolToken,
+  IToucanPoolToken__factory,
   OffsetHelper,
   OffsetHelper__factory,
   Swapper,
   Swapper__factory,
 } from "../typechain";
 import addresses from "../utils/addresses";
-import { BigNumber, Contract } from "ethers";
-import { usdcABI, wethABI, wmaticABI } from "../utils/ABIs";
+import { BigNumber } from "ethers";
 
 const ONE_ETHER = parseEther("1.0");
 
-describe("Offset Helper - autoOffset", function () {
+function parseUSDC(s: string): BigNumber {
+  return parseUnits(s, 6);
+}
+
+describe("OffsetHelper", function () {
   let offsetHelper: OffsetHelper;
   let swapper: Swapper;
   let bct: IToucanPoolToken;
   let nct: IToucanPoolToken;
-  let weth: Contract;
-  let wmatic: Contract;
-  let usdc: Contract;
+  let weth: IERC20;
+  let wmatic: IWETH;
+  let usdc: IERC20;
   let addr1: SignerWithAddress;
   let addr2: SignerWithAddress;
   let addrs: SignerWithAddress[];
@@ -48,21 +54,11 @@ describe("Offset Helper - autoOffset", function () {
       ]
     );
 
-    weth = new ethers.Contract(addresses.weth, wethABI, addr2);
-    wmatic = new ethers.Contract(addresses.wmatic, wmaticABI, addr2);
-    usdc = new ethers.Contract(addresses.usdc, usdcABI, addr2);
-
-    nct = new ethers.Contract(
-      addresses.nct,
-      hardhatContracts.contracts.NatureCarbonTonne.abi,
-      addr2
-    ) as IToucanPoolToken;
-
-    bct = new ethers.Contract(
-      addresses.bct,
-      poolContract.abi,
-      addr2
-    ) as IToucanPoolToken;
+    weth = IERC20__factory.connect(addresses.weth, addr2);
+    wmatic = IWETH__factory.connect(addresses.wmatic, addr2);
+    usdc = IERC20__factory.connect(addresses.usdc, addr2);
+    nct = IToucanPoolToken__factory.connect(addresses.nct, addr2);
+    bct = IToucanPoolToken__factory.connect(addresses.bct, addr2);
   });
 
   before(async () => {
@@ -92,6 +88,10 @@ describe("Offset Helper - autoOffset", function () {
       })
     );
 
+    await IWETH__factory.connect(addresses.wmatic, addr2).deposit({
+      value: parseEther("1000"),
+    });
+
     await swapper.swap(addresses.weth, parseEther("20.0"), {
       value: await swapper.calculateNeededETHAmount(
         addresses.weth,
@@ -99,10 +99,10 @@ describe("Offset Helper - autoOffset", function () {
       ),
     });
 
-    await swapper.swap(addresses.usdc, parseUnits("20.0", 6), {
+    await swapper.swap(addresses.usdc, parseUSDC("1000"), {
       value: await swapper.calculateNeededETHAmount(
         addresses.usdc,
-        parseUnits("20.0", 6)
+        parseUSDC("1000")
       ),
     });
 
@@ -288,11 +288,6 @@ describe("Offset Helper - autoOffset", function () {
     });
 
     it("should retire using a WMATIC swap and NCT redemption", async function () {
-      // first we wrap some matic
-      await wmatic.deposit({
-        value: parseEther("20.0"),
-      });
-
       // then we set the initial chain state
       const wmaticBalanceBefore = await wmatic.balanceOf(addr2.address);
       const nctSupplyBefore = await nct.totalSupply();
