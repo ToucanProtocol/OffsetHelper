@@ -429,8 +429,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address _toToken
     ) public onlySwappable(_fromToken) onlyRedeemable(_toToken) returns (uint256) {
         // calculate path & amounts
-        (address[] memory path, uint256[] memory expAmounts) =
-            calculateFixedInSwap(_fromToken, _fromAmount, _toToken);
+        address[] memory path = generatePath(_fromToken, _toToken);
         uint256 len = path.length;
 
         // transfer tokens
@@ -446,7 +445,7 @@ contract OffsetHelper is OffsetHelperStorage {
         // swap
         uint256[] memory amounts = routerSushi().swapExactTokensForTokens(
             _fromAmount,
-            expAmounts[len - 1], // min. output amount
+            0, // min. output amount
             path,
             address(this),
             block.timestamp
@@ -515,11 +514,7 @@ contract OffsetHelper is OffsetHelperStorage {
     function swap(address _toToken, uint256 _toAmount) public payable onlyRedeemable(_toToken) {
         // calculate path & amounts
         address fromToken = eligibleTokenAddresses["WMATIC"];
-        (address[] memory path, uint256[] memory expAmounts) =
-            calculateFixedOutSwap(fromToken, _toToken, _toAmount);
-
-        // check user sent enough ETH/MATIC
-        require(msg.value >= expAmounts[0], "Didn't send enough MATIC");
+        address[] memory path = generatePath(fromToken, _toToken);
 
         // swap
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
@@ -551,14 +546,13 @@ contract OffsetHelper is OffsetHelperStorage {
         // calculate path & amounts
         uint256 fromAmount = msg.value;
         address fromToken = eligibleTokenAddresses["WMATIC"];
-        (address[] memory path, uint256[] memory expAmounts) =
-            calculateFixedInSwap(fromToken, fromAmount, _toToken);
+        address[] memory path = generatePath(fromToken, _toToken);
         uint256 len = path.length;
 
         // swap
         uint256[] memory amounts = routerSushi().swapExactETHForTokens{
             value: fromAmount
-        }(expAmounts[len - 1], path, address(this), block.timestamp);
+        }(0, path, address(this), block.timestamp);
         uint256 amountOut = amounts[len - 1];
 
         // update balances
