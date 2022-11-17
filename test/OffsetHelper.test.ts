@@ -130,25 +130,29 @@ describe("OffsetHelper", function () {
     { name: "BCT", token: () => bct },
   ];
 
-  describe("#autoOffsetUsingToken(address,uint256,address)[exact-in]", function () {
+  describe("#autoOffsetExactInToken()", function () {
     async function retireFixedInToken(
       fromToken: IERC20,
       fromAmount: BigNumber,
       poolToken: IToucanPoolToken
     ) {
-      const expOffset = await offsetHelper[
-        "calculateExpectedPoolTokenAmount(address,uint256,address)"
-      ](fromToken.address, fromAmount, poolToken.address);
+      const expOffset = await offsetHelper.calculateExpectedPoolTokenForToken(
+        fromToken.address,
+        fromAmount,
+        poolToken.address
+      );
       // sanity check
       expect(expOffset).to.be.greaterThan(0);
 
       await fromToken.approve(offsetHelper.address, fromAmount);
 
       const supplyBefore = await poolToken.totalSupply();
-      const autoOffsetUsingToken =
-        offsetHelper["autoOffsetUsingToken(address,uint256,address)"];
       await expect(
-        autoOffsetUsingToken(fromToken.address, fromAmount, poolToken.address)
+        offsetHelper.autoOffsetExactInToken(
+          fromToken.address,
+          fromAmount,
+          poolToken.address
+        )
       )
         .to.emit(offsetHelper, "Redeemed")
         .withArgs(
@@ -184,20 +188,24 @@ describe("OffsetHelper", function () {
     });
   });
 
-  describe("#autoOffsetUsingETH(address)[exact-in]", function () {
+  describe("#autoOffsetExactInETH()", function () {
     async function retireFixedInETH(
       fromAmount: BigNumber,
       poolToken: IToucanPoolToken
     ) {
-      const expOffset = await offsetHelper[
-        "calculateExpectedPoolTokenAmount(uint256,address)"
-      ](fromAmount, poolToken.address);
+      const expOffset = await offsetHelper.calculateExpectedPoolTokenForETH(
+        fromAmount,
+        poolToken.address
+      );
       // sanity check, should easily be > 1 tonne for all provided inputs
-      expect(expOffset).to.be.greaterThan(ONE_ETHER);
+      expect(expOffset).to.be.greaterThan(0);
 
       const supplyBefore = await poolToken.totalSupply();
-      const autoOffsetUsingETH = offsetHelper["autoOffsetUsingETH(address)"];
-      await expect(autoOffsetUsingETH(poolToken.address, { value: fromAmount }))
+      await expect(
+        offsetHelper.autoOffsetExactInETH(poolToken.address, {
+          value: fromAmount,
+        })
+      )
         .to.emit(offsetHelper, "Redeemed")
         .withArgs(
           addr2.address,
@@ -220,7 +228,7 @@ describe("OffsetHelper", function () {
     });
   });
 
-  describe("#autoOffset()[exact-out]", function () {
+  describe("#autoOffsetExactOut{ETH,Token}()", function () {
     it("should retire 1.0 TCO2 using a WETH swap and NCT redemption", async function () {
       // first we set the initial chain state
       const wethBalanceBefore = await weth.balanceOf(addr2.address);
@@ -235,9 +243,11 @@ describe("OffsetHelper", function () {
 
       // then we use the autoOffset function to retire 1.0 TCO2 from WETH using NCT
       await (await weth.approve(offsetHelper.address, wethCost)).wait();
-      const autoOffsetUsingToken =
-        offsetHelper.functions["autoOffsetUsingToken(address,address,uint256)"];
-      await autoOffsetUsingToken(addresses.weth, addresses.nct, ONE_ETHER);
+      await offsetHelper.autoOffsetExactOutToken(
+        addresses.weth,
+        addresses.nct,
+        ONE_ETHER
+      );
 
       // then we set the chain state after the transaction
       const wethBalanceAfter = await weth.balanceOf(addr2.address);
@@ -266,10 +276,8 @@ describe("OffsetHelper", function () {
       );
 
       // then we use the autoOffset function to retire 1.0 TCO2 from MATIC using NCT
-      const autoOffsetUsingETH =
-        offsetHelper.functions["autoOffsetUsingETH(address,uint256)"];
       const tx = await (
-        await autoOffsetUsingETH(addresses.nct, ONE_ETHER, {
+        await offsetHelper.autoOffsetExactOutETH(addresses.nct, ONE_ETHER, {
           value: maticCost,
         })
       ).wait();
@@ -299,7 +307,7 @@ describe("OffsetHelper", function () {
 
       // then we use the autoOffset function to retire 1.0 TCO2 from NCT
       await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
-      await offsetHelper.autoOffsetUsingPoolToken(addresses.nct, ONE_ETHER);
+      await offsetHelper.autoOffsetPoolToken(addresses.nct, ONE_ETHER);
 
       // then we set the chain state after the transaction
       const nctBalanceAfter = await nct.balanceOf(addr2.address);
@@ -330,9 +338,11 @@ describe("OffsetHelper", function () {
 
       // then we use the autoOffset function to retire 1.0 TCO2 from WETH using BCT
       await (await weth.approve(offsetHelper.address, wethCost)).wait();
-      const autoOffsetUsingToken =
-        offsetHelper.functions["autoOffsetUsingToken(address,address,uint256)"];
-      await autoOffsetUsingToken(addresses.weth, addresses.bct, ONE_ETHER);
+      await offsetHelper.autoOffsetExactOutToken(
+        addresses.weth,
+        addresses.bct,
+        ONE_ETHER
+      );
 
       // then we set the chain state after the transaction
       const wethBalanceAfter = await weth.balanceOf(addr2.address);
@@ -363,9 +373,11 @@ describe("OffsetHelper", function () {
 
       // then we use the autoOffset function to retire 1.0 TCO2 from USDC using NCT
       await (await usdc.approve(offsetHelper.address, usdcCost)).wait();
-      const autoOffsetUsingToken =
-        offsetHelper.functions["autoOffsetUsingToken(address,address,uint256)"];
-      await autoOffsetUsingToken(addresses.usdc, addresses.nct, ONE_ETHER);
+      await offsetHelper.autoOffsetExactOutToken(
+        addresses.usdc,
+        addresses.nct,
+        ONE_ETHER
+      );
 
       // then we set the chain state after the transaction
       const usdcBalanceAfter = await usdc.balanceOf(addr2.address);
@@ -396,9 +408,11 @@ describe("OffsetHelper", function () {
 
       // we use the autoOffset function to retire 1.0 TCO2 from WMATIC using NCT
       await (await wmatic.approve(offsetHelper.address, wmaticCost)).wait();
-      const autoOffsetUsingToken =
-        offsetHelper.functions["autoOffsetUsingToken(address,address,uint256)"];
-      await autoOffsetUsingToken(addresses.wmatic, addresses.nct, ONE_ETHER);
+      await offsetHelper.autoOffsetExactOutToken(
+        addresses.wmatic,
+        addresses.nct,
+        ONE_ETHER
+      );
 
       // then we set the chain state after the transaction
       const wmaticBalanceAfter = await wmatic.balanceOf(addr2.address);
@@ -815,7 +829,7 @@ describe("OffsetHelper", function () {
     });
   });
 
-  describe("#swap() for NCT", function () {
+  describe("#swapExactOut{ETH,Token}() for NCT", function () {
     it("Should swap WETH for 1.0 NCT", async function () {
       const initialBalance = await nct.balanceOf(offsetHelper.address);
 
@@ -831,7 +845,7 @@ describe("OffsetHelper", function () {
       ).wait();
 
       await (
-        await offsetHelper["swap(address,address,uint256)"](
+        await offsetHelper.swapExactOutToken(
           addresses.weth,
           addresses.nct,
           ONE_ETHER
@@ -857,7 +871,7 @@ describe("OffsetHelper", function () {
       );
 
       await (
-        await offsetHelper["swap(address,uint256)"](addresses.nct, ONE_ETHER, {
+        await offsetHelper.swapExactOutETH(addresses.nct, ONE_ETHER, {
           value: maticToSend,
         })
       ).wait();
@@ -877,7 +891,7 @@ describe("OffsetHelper", function () {
       );
 
       await (
-        await offsetHelper["swap(address,uint256)"](addresses.nct, ONE_ETHER, {
+        await offsetHelper.swapExactOutETH(addresses.nct, ONE_ETHER, {
           value: maticToSend.add(parseEther("0.5")),
         })
       ).wait();
@@ -901,11 +915,7 @@ describe("OffsetHelper", function () {
       await expect(
         offsetHelper
           .connect(addrs[0])
-          ["swap(address,address,uint256)"](
-            addresses.weth,
-            addresses.nct,
-            ONE_ETHER
-          )
+          .swapExactOutToken(addresses.weth, addresses.nct, ONE_ETHER)
       ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     });
 
@@ -921,7 +931,7 @@ describe("OffsetHelper", function () {
       await (await weth.approve(offsetHelper.address, neededAmount)).wait();
 
       await (
-        await offsetHelper["swap(address,address,uint256)"](
+        await offsetHelper.swapExactOutToken(
           addresses.weth,
           addresses.bct,
           ONE_ETHER
