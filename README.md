@@ -36,19 +36,11 @@ See [./docs/OffsetHelper.md](./docs/OffsetHelper.md) for detailed documentation.
 
 ## Commands
 
-Use the following commands to compile, test and deploy the contracts:
+Use the following commands to compile and test the Offset Helper:
 
 ```
 yarn compile
 yarn test      # test using a polygon fork
-yarn coverage  # test using a polygon fork with coverage report
-yarn deploy
-```
-
-Documentation can be auto-generated from the contract's [natspec](https://docs.soliditylang.org/en/latest/natspec-format.html) in [./docs/](./docs/) using
-
-```
-yarn doc
 ```
 
 Deploy the contract locally with:
@@ -56,3 +48,19 @@ Deploy the contract locally with:
 ```
 yarn hardhat --network hardhat deployOffsetHelper --verify false
 ```
+
+## Deployment
+
+To deploy the Offset Helper first use the command to auto-generate documentation from the contract's [natspec](https://docs.soliditylang.org/en/latest/natspec-format.html) in [./docs/](./docs/) using:
+
+```
+yarn doc
+```
+
+Then deploy the contract to Polygon Mainnet and Mumbai Testnet with:
+
+```
+yarn hardhat --network <network> deployOffsetHelper
+```
+
+Make sure to update this readme with the new contract addresses.
