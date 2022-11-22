@@ -14,7 +14,7 @@ With the OffsetHelper contract, the user only needs to interact with the OffsetH
 
 | Contract     | Polygon                                                                                                                  | Mumbai                                                                                                                          |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| OffsetHelper | [0xFAFcCd01C395e4542BEed819De61f02f5562fAEa](https://polygonscan.com/address/0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c) | [0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7](https://mumbai.polygonscan.com/address/0xDC54484c13d9956199cc14A49d07D58be4794D2A) |
+| OffsetHelper | [0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c](https://polygonscan.com/address/0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c) | [0xDC54484c13d9956199cc14A49d07D58be4794D2A](https://mumbai.polygonscan.com/address/0xDC54484c13d9956199cc14A49d07D58be4794D2A) |
 
 ## OffsetHelper
 
