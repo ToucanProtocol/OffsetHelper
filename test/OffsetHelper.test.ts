@@ -249,7 +249,7 @@ describe("OffsetHelper", function () {
   });
 
   describe("#autoOffsetExactOut{ETH,Token}()", function () {
-    it("should retire using a MATIC swap and NCT redemption", async function () {
+    it("should retire 1.0 TCO2 using a MATIC swap and NCT redemption", async function () {
       const { offsetHelper, addr2, nct } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -289,7 +289,7 @@ describe("OffsetHelper", function () {
       ).to.equal("1.0");
     });
 
-    it("should retire using a NCT deposit and NCT redemption", async function () {
+    it("should retire 1.0 TCO2 using a NCT deposit and NCT redemption", async function () {
       const { offsetHelper, addr2, nct } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -317,7 +317,7 @@ describe("OffsetHelper", function () {
       ).to.equal("1.0");
     });
 
-    it("should retire using a USDC swap and NCT redemption", async function () {
+    it("should retire 1.0 TCO2 using a USDC swap and NCT redemption", async function () {
       const { offsetHelper, addr2, nct, usdc } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -356,7 +356,7 @@ describe("OffsetHelper", function () {
       ).to.equal("1.0");
     });
 
-    it("should retire using a WMATIC swap and NCT redemption", async function () {
+    it("should retire 1.0 TCO2 using a WMATIC swap and NCT redemption", async function () {
       const { offsetHelper, addr2, nct, wmatic } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -438,7 +438,7 @@ describe("OffsetHelper", function () {
   });
 
   describe("#autoRedeem()", function () {
-    it("Should fail because we haven't deposited NCT", async function () {
+    it("should fail because we haven't deposited NCT", async function () {
       const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
       await expect(
         offsetHelper.autoRedeem(addresses.nct, ONE_ETHER)
@@ -542,7 +542,7 @@ describe("OffsetHelper", function () {
   });
 
   describe("#autoRetire()", function () {
-    it("Should fail because we haven't redeemed any TCO2", async function () {
+    it("should fail because we haven't redeemed any TCO2", async function () {
       const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
       await expect(
         offsetHelper.autoRetire(
@@ -678,7 +678,7 @@ describe("OffsetHelper", function () {
   });
 
   describe("#deposit() and #withdraw()", function () {
-    it("Should fail to deposit because we have no NCT", async function () {
+    it("should fail to deposit because we have no NCT", async function () {
       const { offsetHelper, addrs } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -691,7 +691,7 @@ describe("OffsetHelper", function () {
       ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
     });
 
-    it("Should deposit and withdraw 1.0 NCT", async function () {
+    it("should deposit and withdraw 1.0 NCT", async function () {
       const { offsetHelper, addr2 } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -710,7 +710,7 @@ describe("OffsetHelper", function () {
       );
     });
 
-    it("Should fail to withdraw because we haven't deposited enough NCT", async function () {
+    it("should fail to withdraw because we haven't deposited enough NCT", async function () {
       const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
       await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
 
@@ -722,7 +722,7 @@ describe("OffsetHelper", function () {
     });
 
     TOKEN_POOLS.forEach((pool) => {
-      it(`Should deposit 1.0 ${pool.name}`, async function () {
+      it(`should deposit 1.0 ${pool.name}`, async function () {
         const { offsetHelper, addr2 } = await loadFixture(
           deployOffsetHelperFixture
         );
@@ -750,7 +750,7 @@ describe("OffsetHelper", function () {
   });
 
   describe("#swapExactOut{ETH,Token}() for NCT", function () {
-    it("Should swap MATIC for 1.0 NCT", async function () {
+    it("should swap MATIC for 1.0 NCT", async function () {
       const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
 
       const maticToSend = await offsetHelper.calculateNeededETHAmount(
@@ -768,7 +768,7 @@ describe("OffsetHelper", function () {
       expect(formatEther(balance)).to.be.eql("1.0");
     });
 
-    it("Should send surplus MATIC to user", async function () {
+    it("should send surplus MATIC to user", async function () {
       const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
 
       const preSwapETHBalance = await offsetHelper.provider.getBalance(
@@ -797,7 +797,7 @@ describe("OffsetHelper", function () {
       );
     });
 
-    it("Should fail since we have no WETH", async function () {
+    it("should fail since we have no WETH", async function () {
       const { offsetHelper, weth, addrs } = await loadFixture(
         deployOffsetHelperFixture
       );
@@ -814,7 +814,7 @@ describe("OffsetHelper", function () {
     });
 
     TOKEN_POOLS.forEach((pool) => {
-      it(`Should swap WETH for 1.0 ${pool.name}`, async function () {
+      it(`should swap WETH for 1.0 ${pool.name}`, async function () {
         const { offsetHelper, weth, addr2 } = await loadFixture(
           deployOffsetHelperFixture
         );
