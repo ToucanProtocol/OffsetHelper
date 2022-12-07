@@ -23,6 +23,11 @@ import addresses from "../utils/addresses";
 import { BigNumber } from "ethers";
 import { sum as sumBN } from "../utils/bignumber";
 
+type token = {
+  name: string;
+  token: () => IToucanPoolToken;
+};
+
 const ONE_ETHER = parseEther("1.0");
 
 function parseUSDC(s: string): BigNumber {
@@ -56,7 +61,7 @@ describe("OffsetHelper", function () {
     const weth = IERC20__factory.connect(addresses.weth, addr2);
     const wmatic = IWETH__factory.connect(addresses.wmatic, addr2);
 
-    const tokens = {
+    const tokens: Record<string, token> = {
       nct: {
         name: "NCT",
         token: () => nct,
@@ -185,21 +190,18 @@ describe("OffsetHelper", function () {
     for (const name of TOKEN_POOLS) {
       it(`should retire 1 WETH for ${name.toUpperCase()} redemption`, async function () {
         const { weth, tokens } = await loadFixture(deployOffsetHelperFixture);
-        // @ts-ignore
         const poolToken = tokens[name];
         await retireFixedInToken(weth, ONE_ETHER, poolToken.token());
       });
 
       it(`should retire 100 USDC for ${name.toUpperCase()} redemption`, async function () {
         const { usdc, tokens } = await loadFixture(deployOffsetHelperFixture);
-        // @ts-ignore
         const poolToken = tokens[name];
         await retireFixedInToken(usdc, parseUSDC("100"), poolToken.token());
       });
 
       it(`should retire 20 WMATIC for ${name.toUpperCase()} redemption`, async function () {
         const { wmatic, tokens } = await loadFixture(deployOffsetHelperFixture);
-        // @ts-ignore
         const poolToken = tokens[name];
         await retireFixedInToken(wmatic, parseEther("20"), poolToken.token());
       });
@@ -246,7 +248,6 @@ describe("OffsetHelper", function () {
     for (const name of TOKEN_POOLS) {
       it(`should retire 20 MATIC for ${name.toUpperCase()} redemption`, async function () {
         const { tokens } = await loadFixture(deployOffsetHelperFixture);
-        // @ts-ignore
         const poolToken = tokens[name];
         await retireFixedInETH(parseEther("20"), poolToken.token());
       });
@@ -260,7 +261,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -307,7 +307,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -347,7 +346,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -387,7 +385,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -429,7 +426,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // then we set the initial chain state
@@ -471,7 +467,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -516,7 +511,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         await expect(
@@ -532,7 +526,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial chain state
@@ -648,7 +641,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         // first we set the initial state
@@ -785,7 +777,6 @@ describe("OffsetHelper", function () {
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
-        // @ts-ignore
         const poolToken = tokens[name];
 
         await (
@@ -809,7 +800,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, addr2, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         const preDepositPoolTokenBalance = await poolToken
@@ -847,7 +837,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         await (
@@ -873,7 +862,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, addr2, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         await (
@@ -905,7 +893,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         const maticToSend = await offsetHelper.calculateNeededETHAmount(
@@ -931,7 +918,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         const preSwapETHBalance = await offsetHelper.provider.getBalance(
@@ -968,7 +954,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, weth, addrs, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         await (
@@ -990,7 +975,6 @@ describe("OffsetHelper", function () {
         const { offsetHelper, weth, addr2, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
-        // @ts-ignore
         const poolToken = tokens[name];
 
         const initialBalance = await poolToken
