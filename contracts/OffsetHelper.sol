@@ -188,11 +188,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address _poolToken
     ) public returns (address[] memory tco2s, uint256[] memory amounts) {
         // swap input token for BCT / NCT
-        uint256 amountToOffset = swapExactInToken(
-            _fromToken,
-            _amountToSwap,
-            _poolToken
-        );
+        uint256 amountToOffset = swapExactInToken(_fromToken, _amountToSwap, _poolToken);
 
         // redeem BCT / NCT for TCO2s
         (tco2s, amounts) = autoRedeem(_poolToken, amountToOffset);
@@ -222,10 +218,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    function autoOffsetExactOutETH(
-        address _poolToken,
-        uint256 _amountToOffset
-    )
+    function autoOffsetExactOutETH(address _poolToken, uint256 _amountToOffset)
         public
         payable
         returns (address[] memory tco2s, uint256[] memory amounts)
@@ -256,9 +249,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    function autoOffsetExactInETH(
-        address _poolToken
-    )
+    function autoOffsetExactInETH(address _poolToken)
         public
         payable
         returns (address[] memory tco2s, uint256[] memory amounts)
@@ -360,18 +351,9 @@ contract OffsetHelper is OffsetHelperStorage {
         address _fromToken,
         address _toToken,
         uint256 _toAmount
-    )
-        public
-        view
-        onlySwappable(_fromToken)
-        onlyRedeemable(_toToken)
-        returns (uint256)
-    {
-        (, uint256[] memory amounts) = calculateExactOutSwap(
-            _fromToken,
-            _toToken,
-            _toAmount
-        );
+    ) public view onlySwappable(_fromToken) onlyRedeemable(_toToken) returns (uint256) {
+        (, uint256[] memory amounts) =
+            calculateExactOutSwap(_fromToken, _toToken, _toAmount);
         return amounts[0];
     }
 
@@ -389,18 +371,9 @@ contract OffsetHelper is OffsetHelperStorage {
         address _fromToken,
         uint256 _fromAmount,
         address _toToken
-    )
-        public
-        view
-        onlySwappable(_fromToken)
-        onlyRedeemable(_toToken)
-        returns (uint256)
-    {
-        (, uint256[] memory amounts) = calculateExactInSwap(
-            _fromToken,
-            _fromAmount,
-            _toToken
-        );
+    ) public view onlySwappable(_fromToken) onlyRedeemable(_toToken) returns (uint256) {
+        (, uint256[] memory amounts) =
+            calculateExactInSwap(_fromToken, _fromAmount, _toToken);
         return amounts[amounts.length - 1];
     }
 
@@ -417,10 +390,8 @@ contract OffsetHelper is OffsetHelperStorage {
         uint256 _toAmount
     ) public onlySwappable(_fromToken) onlyRedeemable(_toToken) {
         // calculate path & amounts
-        (
-            address[] memory path,
-            uint256[] memory expAmounts
-        ) = calculateExactOutSwap(_fromToken, _toToken, _toAmount);
+        (address[] memory path, uint256[] memory expAmounts) =
+            calculateExactOutSwap(_fromToken, _toToken, _toAmount);
         uint256 amountIn = expAmounts[0];
 
         // transfer tokens
@@ -465,12 +436,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address _fromToken,
         uint256 _fromAmount,
         address _toToken
-    )
-        public
-        onlySwappable(_fromToken)
-        onlyRedeemable(_toToken)
-        returns (uint256)
-    {
+    ) public onlySwappable(_fromToken) onlyRedeemable(_toToken) returns (uint256) {
         // calculate path & amounts
         address[] memory path = generatePath(_fromToken, _toToken);
         uint256 len = path.length;
@@ -517,16 +483,15 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return amounts The amount of MATIC required in order to swap for
      * the specified amount of the pool token
      */
-    function calculateNeededETHAmount(
-        address _toToken,
-        uint256 _toAmount
-    ) public view onlyRedeemable(_toToken) returns (uint256) {
+    function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
+        public
+        view
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
         address fromToken = eligibleTokenAddresses["WMATIC"];
-        (, uint256[] memory amounts) = calculateExactOutSwap(
-            fromToken,
-            _toToken,
-            _toAmount
-        );
+        (, uint256[] memory amounts) =
+            calculateExactOutSwap(fromToken, _toToken, _toAmount);
         return amounts[0];
     }
 
@@ -544,11 +509,8 @@ contract OffsetHelper is OffsetHelperStorage {
         address _toToken
     ) public view onlyRedeemable(_toToken) returns (uint256) {
         address fromToken = eligibleTokenAddresses["WMATIC"];
-        (, uint256[] memory amounts) = calculateExactInSwap(
-            fromToken,
-            _fromMaticAmount,
-            _toToken
-        );
+        (, uint256[] memory amounts) =
+            calculateExactInSwap(fromToken, _fromMaticAmount, _toToken);
         return amounts[amounts.length - 1];
     }
 
@@ -558,10 +520,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _toToken Token to swap for (will be held within contract)
      * @param _toAmount Amount of NCT / BCT wanted
      */
-    function swapExactOutETH(
-        address _toToken,
-        uint256 _toAmount
-    ) public payable onlyRedeemable(_toToken) {
+    function swapExactOutETH(address _toToken, uint256 _toAmount) public payable onlyRedeemable(_toToken) {
         // calculate path & amounts
         address fromToken = eligibleTokenAddresses["WMATIC"];
         address[] memory path = generatePath(fromToken, _toToken);
@@ -592,9 +551,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return Resulting amount of Toucan pool token that got acquired for the
      * swapped MATIC.
      */
-    function swapExactInETH(
-        address _toToken
-    ) public payable onlyRedeemable(_toToken) returns (uint256) {
+    function swapExactInETH(address _toToken) public payable onlyRedeemable(_toToken) returns (uint256) {
         // calculate path & amounts
         uint256 fromAmount = msg.value;
         address fromToken = eligibleTokenAddresses["WMATIC"];
@@ -630,10 +587,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Allow users to deposit BCT / NCT.
      * @dev Needs to be approved
      */
-    function deposit(
-        address _erc20Addr,
-        uint256 _amount
-    ) public onlyRedeemable(_erc20Addr) {
+    function deposit(address _erc20Addr, uint256 _amount) public onlyRedeemable(_erc20Addr) {
         IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
         balances[msg.sender][_erc20Addr] += _amount;
     }
@@ -646,10 +600,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    function autoRedeem(
-        address _fromToken,
-        uint256 _amount
-    )
+    function autoRedeem(address _fromToken, uint256 _amount)
         public
         onlyRedeemable(_fromToken)
         returns (address[] memory tco2s, uint256[] memory amounts)
@@ -681,10 +632,9 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _amounts The amounts to retire from each of the corresponding
      * TCO2 addresses
      */
-    function autoRetire(
-        address[] memory _tco2s,
-        uint256[] memory _amounts
-    ) public {
+    function autoRetire(address[] memory _tco2s, uint256[] memory _amounts)
+        public
+    {
         uint256 tco2sLen = _tco2s.length;
         require(tco2sLen != 0, "Array empty");
 
@@ -716,8 +666,10 @@ contract OffsetHelper is OffsetHelperStorage {
     function calculateExactOutSwap(
         address _fromToken,
         address _toToken,
-        uint256 _toAmount
-    ) internal view returns (address[] memory path, uint256[] memory amounts) {
+        uint256 _toAmount)
+        internal view
+        returns (address[] memory path, uint256[] memory amounts)
+    {
         path = generatePath(_fromToken, _toToken);
         uint256 len = path.length;
 
@@ -731,8 +683,10 @@ contract OffsetHelper is OffsetHelperStorage {
     function calculateExactInSwap(
         address _fromToken,
         uint256 _fromAmount,
-        address _toToken
-    ) internal view returns (address[] memory path, uint256[] memory amounts) {
+        address _toToken)
+        internal view
+        returns (address[] memory path, uint256[] memory amounts)
+    {
         path = generatePath(_fromToken, _toToken);
         uint256 len = path.length;
 
@@ -743,10 +697,11 @@ contract OffsetHelper is OffsetHelperStorage {
         require(_fromAmount == amounts[0], "Input amount mismatch");
     }
 
-    function generatePath(
-        address _fromToken,
-        address _toToken
-    ) internal view returns (address[] memory) {
+    function generatePath(address _fromToken, address _toToken)
+        internal
+        view
+        returns (address[] memory)
+    {
         if (_fromToken == eligibleTokenAddresses["USDC"]) {
             address[] memory path = new address[](2);
             path[0] = _fromToken;
@@ -785,9 +740,11 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Delete eligible tokens stored in the contract.
      * @param _tokenSymbol The symbol of the token to remove
      */
-    function deleteEligibleTokenAddress(
-        string memory _tokenSymbol
-    ) public virtual onlyOwner {
+    function deleteEligibleTokenAddress(string memory _tokenSymbol)
+        public
+        virtual
+        onlyOwner
+    {
         delete eligibleTokenAddresses[_tokenSymbol];
     }
 
@@ -795,9 +752,11 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Change the TCO2 contracts registry.
      * @param _address The address of the Toucan contract registry to use
      */
-    function setToucanContractRegistry(
-        address _address
-    ) public virtual onlyOwner {
+    function setToucanContractRegistry(address _address)
+        public
+        virtual
+        onlyOwner
+    {
         contractRegistryAddress = _address;
     }
 }
