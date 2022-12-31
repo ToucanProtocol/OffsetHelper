@@ -642,6 +642,12 @@ contract OffsetHelper is OffsetHelperStorage {
 
         uint256 i = 0;
         while (i < tco2sLen) {
+            if (_amounts[i] == 0) {
+                unchecked {
+                    i++;
+                }
+                continue;
+            }
             require(
                 balances[msg.sender][_tco2s[i]] >= _amounts[i],
                 "Insufficient TCO2 balance"
