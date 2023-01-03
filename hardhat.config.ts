@@ -1,17 +1,14 @@
 import * as dotenv from "dotenv";
 
-import { HardhatUserConfig, subtask, task } from "hardhat/config";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
+import { HardhatUserConfig, task } from "hardhat/config";
+import { relative } from "path";
 import "solidity-coverage";
 import "solidity-docgen";
-import { tokens } from "./utils/tokens";
-import addresses, { mumbaiAddresses } from "./utils/addresses";
-import { boolean } from "hardhat/internal/core/params/argumentTypes";
-import { relative } from "path";
 
 dotenv.config();
 
