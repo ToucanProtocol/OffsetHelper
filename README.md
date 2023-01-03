@@ -47,4 +47,6 @@ yarn doc
 # deploy the contract
 yarn hardhat deploy --network <network>
 
+# verify the contract
+yarn hardhat verify:offsetHelper --network mumbai --address <address where Offset Helper was deployed>
 ```
