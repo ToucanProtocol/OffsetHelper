@@ -12,9 +12,7 @@ With the OffsetHelper contract, the user only needs to interact with the OffsetH
 
 ## Deployments
 
-| Contract     | Polygon                                                                                                                  | Mumbai                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| OffsetHelper | [0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c](https://polygonscan.com/address/0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c) | [0xDC54484c13d9956199cc14A49d07D58be4794D2A](https://mumbai.polygonscan.com/address/0xDC54484c13d9956199cc14A49d07D58be4794D2A) |
+For current deployments, see the `./deployments` folder.
 
 ## OffsetHelper
 
@@ -36,31 +34,17 @@ See [./docs/OffsetHelper.md](./docs/OffsetHelper.md) for detailed documentation.
 
 ## Commands
 
-Use the following commands to compile and test the Offset Helper:
+```bash
+# install dependencies
+yarn install
 
-```
-yarn compile
-yarn test      # test using a polygon fork
-```
+# test the contract
+yarn test
 
-Deploy the contract locally with:
-
-```
-yarn hardhat --network hardhat deployOffsetHelper --verify false
-```
-
-## Deployment
-
-To deploy the Offset Helper first use the command to auto-generate documentation from the contract's [natspec](https://docs.soliditylang.org/en/latest/natspec-format.html) in [./docs/](./docs/) using:
-
-```
+# generate documentation
 yarn doc
-```
 
-Then deploy the contract to Polygon Mainnet and Mumbai Testnet with:
+# deploy the contract
+yarn hardhat deploy --network <network>
 
 ```
-yarn hardhat --network <network> deployOffsetHelper
-```
-
-Make sure to update this readme with the new contract addresses.
