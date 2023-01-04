@@ -10,6 +10,7 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import { relative } from "path";
 import "solidity-coverage";
 import "solidity-docgen";
+import "./tasks/verifyOffsetHelper";
 
 dotenv.config();
 
@@ -61,7 +62,10 @@ const config: HardhatUserConfig = {
     timeout: 150000,
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_API_KEY || "",
+    apiKey: {
+      polygon: process.env.POLYGONSCAN_API_KEY || "",
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+    },
   },
   docgen: {
     pages: (item: any, file: any) =>
