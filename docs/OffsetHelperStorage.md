@@ -14,10 +14,28 @@ mapping(string => address) eligibleTokenAddresses
 address contractRegistryAddress
 ```
 
-### sushiRouterAddress
+### poolAddresses
 
 ```solidity
-address sushiRouterAddress
+address[] poolAddresses
+```
+
+### tokenSymbolsForPaths
+
+```solidity
+string[] tokenSymbolsForPaths
+```
+
+### paths
+
+```solidity
+address[][] paths
+```
+
+### dexRouterAddress
+
+```solidity
+address dexRouterAddress
 ```
 
 ### balances
@@ -25,4 +43,3 @@ address sushiRouterAddress
 ```solidity
 mapping(address => mapping(address => uint256)) balances
 ```
-
