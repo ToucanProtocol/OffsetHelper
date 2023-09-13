@@ -39,6 +39,18 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 44787,
+    },
+    celo: {
+      url: process.env.RPC_ENDPOINT || "https://rpc.ankr.com/celo",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 42220,
+    },
     polygon: {
       url: process.env.RPC_ENDPOINT || "https://rpc.ankr.com/polygon",
       accounts:
@@ -65,7 +77,27 @@ const config: HardhatUserConfig = {
     apiKey: {
       polygon: process.env.BLOCK_EXPLORER_API_KEY || "",
       polygonMumbai: process.env.BLOCK_EXPLORER_API_KEY || "",
+      celo: process.env.BLOCK_EXPLORER_API_KEY || "",
+      alfajores: process.env.BLOCK_EXPLORER_API_KEY || "",
     },
+    customChains: [
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL: `https://api.celoscan.io/api`,
+          browserURL: "https://celoscan.io/",
+        },
+      },
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: `https://api.celoscan.io/api`,
+          browserURL: "https://celoscan.io/",
+        },
+      },
+    ],
   },
   docgen: {
     pages: (item: any, file: any) =>

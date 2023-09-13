@@ -1,1 +1,1 @@
-export const tokens = ["BCT", "NCT", "USDC", "WETH", "WMATIC"];
+export const tokens = ["BCT", "NCT", "USDC", "WETH", "WMATIC", "cUSD", "CELO"];
