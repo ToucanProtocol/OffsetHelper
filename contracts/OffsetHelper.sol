@@ -351,7 +351,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
      * @param _toAmount The desired amount of pool token to receive
-     * @return amountsIn The amount of the ERC20 token required in order to
+     * @return amountIn The amount of the ERC20 token required in order to
      * swap for the specified amount of the pool token
      */
     function calculateNeededTokenAmount(
@@ -363,14 +363,14 @@ contract OffsetHelper is OffsetHelperStorage {
         view
         onlySwappable(_fromToken)
         onlyRedeemable(_poolToken)
-        returns (uint256)
+        returns (uint256 amountIn)
     {
         (, uint256[] memory amounts) = calculateExactOutSwap(
             _fromToken,
             _poolToken,
             _toAmount
         );
-        return amounts[0];
+        amountIn = amounts[0];
     }
 
     /**
@@ -381,7 +381,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
      * @param _fromAmount The amount of ERC20 token to swap
-     * @return The expected amount of Pool token that can be acquired
+     * @return amountOut The expected amount of Pool token that can be acquired
      */
     function calculateExpectedPoolTokenForToken(
         address _fromToken,
@@ -392,14 +392,14 @@ contract OffsetHelper is OffsetHelperStorage {
         view
         onlySwappable(_fromToken)
         onlyRedeemable(_poolToken)
-        returns (uint256)
+        returns (uint256 amountOut)
     {
         (, uint256[] memory amounts) = calculateExactInSwap(
             _fromToken,
             _poolToken,
             _fromAmount
         );
-        return amounts[amounts.length - 1];
+        amountOut = amounts[amounts.length - 1];
     }
 
     /**
@@ -458,7 +458,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _poolToken The address of the pool token to swap for,
      * @param _fromAmount The amount of ERC20 token to swap
      *  e.g., NCT
-     * @return Resulting amount of Toucan pool token that got acquired for the
+     * @return amountOut Resulting amount of Toucan pool token that got acquired for the
      * swapped ERC20 tokens.
      */
     function swapExactInToken(
@@ -469,7 +469,7 @@ contract OffsetHelper is OffsetHelperStorage {
         public
         onlySwappable(_fromToken)
         onlyRedeemable(_poolToken)
-        returns (uint256)
+        returns (uint256 amountOut)
     {
         // calculate path & amounts
 
@@ -495,12 +495,10 @@ contract OffsetHelper is OffsetHelperStorage {
             address(this),
             block.timestamp
         );
-        uint256 amountOut = amounts[len - 1];
+        amountOut = amounts[len - 1];
 
         // update balances
         balances[msg.sender][_poolToken] += amountOut;
-
-        return amountOut;
     }
 
     // apparently I need a fallback and a receive method to fix the situation where transfering dust native tokens
@@ -513,20 +511,20 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _poolToken The address of the pool token to swap for, for
      * example, NCT
      * @param _toAmount The desired amount of pool token to receive
-     * @return amounts The amount of native tokens  required in order to swap for
+     * @return amountIn The amount of native tokens  required in order to swap for
      * the specified amount of the pool token
      */
     function calculateNeededETHAmount(
         address _poolToken,
         uint256 _toAmount
-    ) public view onlyRedeemable(_poolToken) returns (uint256) {
+    ) public view onlyRedeemable(_poolToken) returns (uint256 amountIn) {
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
         (, uint256[] memory amounts) = calculateExactOutSwap(
             fromToken,
             _poolToken,
             _toAmount
         );
-        return amounts[0];
+        amountIn = amounts[0];
     }
 
     /**
@@ -536,19 +534,19 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _fromTokenAmount The amount of native tokens  to swap
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
-     * @return The expected amount of Pool token that can be acquired
+     * @return amountOut The expected amount of Pool token that can be acquired
      */
     function calculateExpectedPoolTokenForETH(
         address _poolToken,
         uint256 _fromTokenAmount
-    ) public view onlyRedeemable(_poolToken) returns (uint256) {
+    ) public view onlyRedeemable(_poolToken) returns (uint256 amountOut) {
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
         (, uint256[] memory amounts) = calculateExactInSwap(
             fromToken,
             _poolToken,
             _fromTokenAmount
         );
-        return amounts[amounts.length - 1];
+        amountOut = amounts[amounts.length - 1];
     }
 
     /**
@@ -591,12 +589,12 @@ contract OffsetHelper is OffsetHelperStorage {
      * provided native tokens  will be swapped.
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
-     * @return Resulting amount of Toucan pool token that got acquired for the
+     * @return amountOut Resulting amount of Toucan pool token that got acquired for the
      * swapped native tokens .
      */
     function swapExactInETH(
         address _poolToken
-    ) public payable onlyRedeemable(_poolToken) returns (uint256) {
+    ) public payable onlyRedeemable(_poolToken) returns (uint256 amountOut) {
         // create path & amounts
         uint256 fromAmount = msg.value;
         // wrap the native token
@@ -609,12 +607,10 @@ contract OffsetHelper is OffsetHelperStorage {
         uint256[] memory amounts = dexRouter().swapExactETHForTokens{
             value: fromAmount
         }(0, path, address(this), block.timestamp);
-        uint256 amountOut = amounts[len - 1];
+        amountOut = amounts[len - 1];
 
         // update balances
         balances[msg.sender][_poolToken] += amountOut;
-
-        return amountOut;
     }
 
     /**
