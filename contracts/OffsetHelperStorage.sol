@@ -11,11 +11,10 @@ contract OffsetHelperStorage is OwnableUpgradeable {
     mapping(address => address[]) public eligibleSwapPaths;
     mapping(string => address[]) public eligibleSwapPathsBySymbol;
 
-    address public dexRouterAddress;
-
     address[] public poolAddresses;
     string[] public tokenSymbolsForPaths;
     address[][] public paths;
+    address public dexRouterAddress;
 
     // user => (token => amount)
     mapping(address => mapping(address => uint256)) public balances;

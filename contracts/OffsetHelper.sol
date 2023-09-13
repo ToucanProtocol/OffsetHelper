@@ -130,6 +130,12 @@ contract OffsetHelper is OffsetHelperStorage {
         }
     }
 
+    // The receive and fallback method are needed to fix the situation where transfering dust native tokens
+    // in the native tokens  to token swap fails
+    receive() external payable {}
+
+    fallback() external payable {}
+
     // ----------------------------------------
     //      Upgradable related functions
     // ----------------------------------------
@@ -137,6 +143,10 @@ contract OffsetHelper is OffsetHelperStorage {
     function initialize() external virtual initializer {
         __Ownable_init_unchained();
     }
+
+    // ----------------------------------------
+    //      Public functions
+    // ----------------------------------------
 
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
@@ -334,103 +344,80 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Checks whether an address is a Toucan pool token address
-     * @param _erc20Address address of token to be checked
-     * @return True if the address is a Toucan pool token address
-     */
-    function isRedeemable(address _erc20Address) private view returns (bool) {
-        for (uint i = 0; i < poolAddresses.length; i++) {
-            if (poolAddresses[i] == _erc20Address) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @notice Checks whether an address can be used in a token swap
-     * @param _erc20Address address of token to be checked
-     * @return True if the specified address can be used in a swap
-     */
-    function isSwappable(address _erc20Address) private view returns (bool) {
-        for (uint i = 0; i < paths.length; i++) {
-            if (paths[i][0] == _erc20Address) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @notice Return how much of the specified ERC20 token is required in
-     * order to swap for the desired amount of a Toucan pool token, for
-     * example,  e.g., NCT.
-     *
-     * @param _fromToken The address of the ERC20 token used for the swap
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
-     * @param _toAmount The desired amount of pool token to receive
-     * @return amountIn The amount of the ERC20 token required in order to
-     * swap for the specified amount of the pool token
-     */
-    function calculateNeededTokenAmount(
-        address _fromToken,
-        address _poolToken,
-        uint256 _toAmount
-    )
-        public
-        view
-        onlySwappable(_fromToken)
-        onlyRedeemable(_poolToken)
-        returns (uint256 amountIn)
-    {
-        (, uint256[] memory amounts) = calculateExactOutSwap(
-            _fromToken,
-            _poolToken,
-            _toAmount
-        );
-        amountIn = amounts[0];
-    }
-
-    /**
-     * @notice Calculates the expected amount of Toucan Pool token that can be
-     * acquired by swapping the provided amount of ERC20 token.
-     *
-     * @param _fromToken The address of the ERC20 token used for the swap
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
-     * @param _fromAmount The amount of ERC20 token to swap
-     * @return amountOut The expected amount of Pool token that can be acquired
-     */
-    function calculateExpectedPoolTokenForToken(
-        address _fromToken,
-        address _poolToken,
-        uint256 _fromAmount
-    )
-        public
-        view
-        onlySwappable(_fromToken)
-        onlyRedeemable(_poolToken)
-        returns (uint256 amountOut)
-    {
-        (, uint256[] memory amounts) = calculateExactInSwap(
-            _fromToken,
-            _poolToken,
-            _fromAmount
-        );
-        amountOut = amounts[amounts.length - 1];
-    }
-
-    /**
-     * @notice Swap eligible ERC20 tokens for Toucan pool tokens (BCT/NCT) on SushiSwap
+     * @notice Redeems the specified amount of NCT / BCT for TCO2.
      * @dev Needs to be approved on the client side
-     * @param _fromToken The address of the ERC20 token used for the swap
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
-     * @param _toAmount The required amount of the Toucan pool token (NCT/BCT)
+     * @param _fromToken Could be the address of NCT
+     * @param _amount Amount to redeem
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
+    function autoRedeem(
+        address _fromToken,
+        uint256 _amount
+    )
+        public
+        onlyRedeemable(_fromToken)
+        returns (address[] memory tco2s, uint256[] memory amounts)
+    {
+        require(
+            balances[msg.sender][_fromToken] >= _amount,
+            "Insufficient NCT/BCT balance"
+        );
+
+        // instantiate pool token (NCT)
+        IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
+
+        // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
+        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
+
+        // update balances
+        balances[msg.sender][_fromToken] -= _amount;
+        uint256 tco2sLen = tco2s.length;
+        for (uint256 index = 0; index < tco2sLen; index++) {
+            balances[msg.sender][tco2s[index]] += amounts[index];
+        }
+
+        emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
+    }
+
+    /**
+     * @notice Retire the specified TCO2 tokens.
+     * @param _tco2s The addresses of the TCO2s to retire
+     * @param _amounts The amounts to retire from each of the corresponding
+     * TCO2 addresses
+     */
+    function autoRetire(
+        address[] memory _tco2s,
+        uint256[] memory _amounts
+    ) public {
+        uint256 tco2sLen = _tco2s.length;
+        require(tco2sLen != 0, "Array empty");
+
+        require(tco2sLen == _amounts.length, "Arrays unequal");
+
+        uint256 i = 0;
+        while (i < tco2sLen) {
+            if (_amounts[i] == 0) {
+                unchecked {
+                    i++;
+                }
+                continue;
+            }
+            require(
+                balances[msg.sender][_tco2s[i]] >= _amounts[i],
+                "Insufficient TCO2 balance"
+            );
+
+            balances[msg.sender][_tco2s[i]] -= _amounts[i];
+
+            IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function swapExactOutToken(
         address _fromToken,
         address _poolToken,
@@ -519,54 +506,6 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // update balances
         balances[msg.sender][_poolToken] += amountOut;
-    }
-
-    // apparently I need a fallback and a receive method to fix the situation where transfering dust native tokens
-    // in the native tokens  to token swap fails
-    fallback() external payable {}
-
-    /**
-     * @notice Return how much native tokens e.g, MATIC is required in order to swap for the
-     * desired amount of a Toucan pool token,  e.g., NCT.
-     * @param _poolToken The address of the pool token to swap for, for
-     * example, NCT
-     * @param _toAmount The desired amount of pool token to receive
-     * @return amountIn The amount of native tokens  required in order to swap for
-     * the specified amount of the pool token
-     */
-    function calculateNeededETHAmount(
-        address _poolToken,
-        uint256 _toAmount
-    ) public view onlyRedeemable(_poolToken) returns (uint256 amountIn) {
-        address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
-        (, uint256[] memory amounts) = calculateExactOutSwap(
-            fromToken,
-            _poolToken,
-            _toAmount
-        );
-        amountIn = amounts[0];
-    }
-
-    /**
-     * @notice Calculates the expected amount of Toucan Pool token that can be
-     * acquired by swapping the provided amount of native tokens e.g., MATIC.
-     *
-     * @param _fromTokenAmount The amount of native tokens  to swap
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
-     * @return amountOut The expected amount of Pool token that can be acquired
-     */
-    function calculateExpectedPoolTokenForETH(
-        address _poolToken,
-        uint256 _fromTokenAmount
-    ) public view onlyRedeemable(_poolToken) returns (uint256 amountOut) {
-        address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
-        (, uint256[] memory amounts) = calculateExactInSwap(
-            fromToken,
-            _poolToken,
-            _fromTokenAmount
-        );
-        amountOut = amounts[amounts.length - 1];
     }
 
     /**
@@ -658,80 +597,126 @@ contract OffsetHelper is OffsetHelperStorage {
         balances[msg.sender][_erc20Addr] += _amount;
     }
 
+    // ----------------------------------------
+    //      Public view functions
+    // ----------------------------------------
+
     /**
-     * @notice Redeems the specified amount of NCT / BCT for TCO2.
-     * @dev Needs to be approved on the client side
-     * @param _fromToken Could be the address of NCT
-     * @param _amount Amount to redeem
-     * @return tco2s An array of the TCO2 addresses that were redeemed
-     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     * @notice Return how much of the specified ERC20 token is required in
+     * order to swap for the desired amount of a Toucan pool token, for
+     * example,  e.g., NCT.
+     *
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _poolToken The address of the pool token to swap for,
+     *  e.g., NCT
+     * @param _toAmount The desired amount of pool token to receive
+     * @return amountIn The amount of the ERC20 token required in order to
+     * swap for the specified amount of the pool token
      */
-    function autoRedeem(
+    function calculateNeededTokenAmount(
         address _fromToken,
-        uint256 _amount
+        address _poolToken,
+        uint256 _toAmount
     )
         public
-        onlyRedeemable(_fromToken)
-        returns (address[] memory tco2s, uint256[] memory amounts)
+        view
+        onlySwappable(_fromToken)
+        onlyRedeemable(_poolToken)
+        returns (uint256 amountIn)
     {
-        require(
-            balances[msg.sender][_fromToken] >= _amount,
-            "Insufficient NCT/BCT balance"
+        (, uint256[] memory amounts) = calculateExactOutSwap(
+            _fromToken,
+            _poolToken,
+            _toAmount
         );
-
-        // instantiate pool token (NCT)
-        IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
-
-        // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
-        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
-
-        // update balances
-        balances[msg.sender][_fromToken] -= _amount;
-        uint256 tco2sLen = tco2s.length;
-        for (uint256 index = 0; index < tco2sLen; index++) {
-            balances[msg.sender][tco2s[index]] += amounts[index];
-        }
-
-        emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
+        amountIn = amounts[0];
     }
 
     /**
-     * @notice Retire the specified TCO2 tokens.
-     * @param _tco2s The addresses of the TCO2s to retire
-     * @param _amounts The amounts to retire from each of the corresponding
-     * TCO2 addresses
+     * @notice Return how much native tokens e.g, MATIC is required in order to swap for the
+     * desired amount of a Toucan pool token,  e.g., NCT.
+     * @param _poolToken The address of the pool token to swap for, for
+     * example, NCT
+     * @param _toAmount The desired amount of pool token to receive
+     * @return amountIn The amount of native tokens  required in order to swap for
+     * the specified amount of the pool token
      */
-    function autoRetire(
-        address[] memory _tco2s,
-        uint256[] memory _amounts
-    ) public {
-        uint256 tco2sLen = _tco2s.length;
-        require(tco2sLen != 0, "Array empty");
-
-        require(tco2sLen == _amounts.length, "Arrays unequal");
-
-        uint256 i = 0;
-        while (i < tco2sLen) {
-            if (_amounts[i] == 0) {
-                unchecked {
-                    i++;
-                }
-                continue;
-            }
-            require(
-                balances[msg.sender][_tco2s[i]] >= _amounts[i],
-                "Insufficient TCO2 balance"
-            );
-
-            balances[msg.sender][_tco2s[i]] -= _amounts[i];
-
-            IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
-
-            unchecked {
-                ++i;
-            }
-        }
+    function calculateNeededETHAmount(
+        address _poolToken,
+        uint256 _toAmount
+    ) public view onlyRedeemable(_poolToken) returns (uint256 amountIn) {
+        address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
+        (, uint256[] memory amounts) = calculateExactOutSwap(
+            fromToken,
+            _poolToken,
+            _toAmount
+        );
+        amountIn = amounts[0];
     }
+
+    /**
+     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * acquired by swapping the provided amount of ERC20 token.
+     *
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _poolToken The address of the pool token to swap for,
+     *  e.g., NCT
+     * @param _fromAmount The amount of ERC20 token to swap
+     * @return amountOut The expected amount of Pool token that can be acquired
+     */
+    function calculateExpectedPoolTokenForToken(
+        address _fromToken,
+        address _poolToken,
+        uint256 _fromAmount
+    )
+        public
+        view
+        onlySwappable(_fromToken)
+        onlyRedeemable(_poolToken)
+        returns (uint256 amountOut)
+    {
+        (, uint256[] memory amounts) = calculateExactInSwap(
+            _fromToken,
+            _poolToken,
+            _fromAmount
+        );
+        amountOut = amounts[amounts.length - 1];
+    }
+
+    /**
+     * @notice Swap eligible ERC20 tokens for Toucan pool tokens (BCT/NCT) on SushiSwap
+     * @dev Needs to be approved on the client side
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _poolToken The address of the pool token to swap for,
+     *  e.g., NCT
+     * @param _toAmount The required amount of the Toucan pool token (NCT/BCT)
+     */
+
+    /**
+     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * acquired by swapping the provided amount of native tokens e.g., MATIC.
+     *
+     * @param _fromTokenAmount The amount of native tokens  to swap
+     * @param _poolToken The address of the pool token to swap for,
+     *  e.g., NCT
+     * @return amountOut The expected amount of Pool token that can be acquired
+     */
+    function calculateExpectedPoolTokenForETH(
+        address _poolToken,
+        uint256 _fromTokenAmount
+    ) public view onlyRedeemable(_poolToken) returns (uint256 amountOut) {
+        address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
+        (, uint256[] memory amounts) = calculateExactInSwap(
+            fromToken,
+            _poolToken,
+            _fromTokenAmount
+        );
+        amountOut = amounts[amounts.length - 1];
+    }
+
+    // ----------------------------------------
+    //      Internal functions
+    // ----------------------------------------
 
     function calculateExactOutSwap(
         address _fromToken,
@@ -808,6 +793,40 @@ contract OffsetHelper is OffsetHelperStorage {
 
     function dexRouter() internal view returns (IUniswapV2Router02) {
         return IUniswapV2Router02(dexRouterAddress);
+    }
+
+    // ----------------------------------------
+    //      Private functions
+    // ----------------------------------------
+
+    /**
+     * @notice Checks whether an address is a Toucan pool token address
+     * @param _erc20Address address of token to be checked
+     * @return True if the address is a Toucan pool token address
+     */
+    function isRedeemable(address _erc20Address) private view returns (bool) {
+        for (uint i = 0; i < poolAddresses.length; i++) {
+            if (poolAddresses[i] == _erc20Address) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @notice Checks whether an address can be used in a token swap
+     * @param _erc20Address address of token to be checked
+     * @return True if the specified address can be used in a swap
+     */
+    function isSwappable(address _erc20Address) private view returns (bool) {
+        for (uint i = 0; i < paths.length; i++) {
+            if (paths[i][0] == _erc20Address) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ----------------------------------------
