@@ -56,6 +56,8 @@ import "./interfaces/IToucanContractRegistry.sol";
  */
 contract OffsetHelper is OffsetHelperStorage {
     using SafeERC20 for IERC20;
+    // Chain ID of Celo mainnet
+    uint256 private constant CELO_MAINNET_CHAINID = 42220;
 
     /**
      * @notice Emitted upon successful redemption of TCO2 tokens from a Toucan
@@ -82,6 +84,15 @@ contract OffsetHelper is OffsetHelperStorage {
 
     modifier onlySwappable(address _token) {
         require(isSwappable(_token), "Path doesn't yet exists.");
+
+        _;
+    }
+
+    modifier nativeTokenChain() {
+        require(
+            block.chainid != CELO_MAINNET_CHAINID,
+            "The function is not available on this network."
+        );
 
         _;
     }
@@ -242,6 +253,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
+        nativeTokenChain
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -277,6 +289,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
+        nativeTokenChain
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -480,7 +493,6 @@ contract OffsetHelper is OffsetHelperStorage {
         returns (uint256 amountOut)
     {
         // calculate path & amounts
-
         address[] memory path = generatePath(_fromToken, _poolToken);
 
         uint256 len = path.length;
@@ -567,7 +579,7 @@ contract OffsetHelper is OffsetHelperStorage {
     function swapExactOutETH(
         address _poolToken,
         uint256 _toAmount
-    ) public payable onlyRedeemable(_poolToken) {
+    ) public payable nativeTokenChain onlyRedeemable(_poolToken) {
         // create path & amounts
         // wrap the native token
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
