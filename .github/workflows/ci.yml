@@ -59,7 +59,7 @@ jobs:
       - name: Test contract
         run: yarn test
         env:
-          POLYGON_URL: ${{ secrets.POLYGON_URL }}
+          RPC_ENDPOINT: ${{ secrets.RPC_ENDPOINT }}
 
       - name: Test solidity-docgen builds
         run: yarn doc
@@ -67,4 +67,4 @@ jobs:
       - name: Deploy contract
         run: yarn hardhat deploy --network hardhat
         env:
-          POLYGON_URL: ${{ secrets.POLYGON_URL }}
+          RPC_ENDPOINT: ${{ secrets.RPC_ENDPOINT }}

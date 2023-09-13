@@ -40,20 +40,20 @@ const config: HardhatUserConfig = {
   },
   networks: {
     polygon: {
-      url:
-        process.env.POLYGON_URL || "https://matic-mainnet.chainstacklabs.com",
+      url: process.env.RPC_ENDPOINT || "https://rpc.ankr.com/polygon",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     mumbai: {
-      url: process.env.MUMBAI_URL || "https://matic-mumbai.chainstacklabs.com",
+      url: "https://rpc.ankr.com/polygon_mumbai",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 80001,
     },
     hardhat: {
       forking: {
         url:
-          process.env.POLYGON_URL ||
+          process.env.RPC_ENDPOINT ||
           "https://polygon-mainnet.g.alchemy.com/v2/4rzRS2MH5LIunV6cejmLhQelv_Vd82rq",
       },
     },
@@ -63,8 +63,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      polygon: process.env.POLYGONSCAN_API_KEY || "",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+      polygon: process.env.BLOCK_EXPLORER_API_KEY || "",
+      polygonMumbai: process.env.BLOCK_EXPLORER_API_KEY || "",
     },
   },
   docgen: {
