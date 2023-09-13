@@ -1,13 +1,17 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import paths from "../utils/paths";
-import { poolAddresses } from "../utils/addresses";
+import { poolAddresses, routerAddresses } from "../utils/addresses";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const pathsToUse =
     paths[hre.network.name === "hardhat" ? "alfajores" : hre.network.name];
   const poolAddressesToUse =
     poolAddresses[
+      hre.network.name === "hardhat" ? "alfajores" : hre.network.name
+    ];
+  const routerAddress =
+    routerAddresses[
       hre.network.name === "hardhat" ? "alfajores" : hre.network.name
     ];
 
@@ -25,6 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       Object.values(poolAddressesToUse),
       Object.keys(pathsToUse),
       Object.values(pathsToUse),
+      routerAddress,
     ],
     log: true,
     autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks
@@ -34,6 +39,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   //   args: [
   //     Object.values(pathsToUse),
   //     "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270", // WMATIC
+  //     routerAddress,
   //   ],
   //   log: true,
   //   autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks

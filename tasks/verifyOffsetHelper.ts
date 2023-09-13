@@ -11,6 +11,7 @@ task("verify:offsetHelper", "Verifies the OffsetHelper")
 
       const pathsToUse = paths[hre.network.name];
       const poolAddressesToUse = poolAddresses[hre.network.name];
+      const routerAddress = routerAddresses[hre.network.name];
 
       await hre.run("verify:verify", {
         address: address,
@@ -18,6 +19,7 @@ task("verify:offsetHelper", "Verifies the OffsetHelper")
           Object.values(poolAddressesToUse),
           Object.keys(pathsToUse),
           Object.values(pathsToUse),
+          routerAddress,
         ],
       });
       console.log(`OffsetHelper verified on ${hre.network.name} to:`, address);

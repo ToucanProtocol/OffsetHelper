@@ -102,11 +102,13 @@ contract OffsetHelper is OffsetHelperStorage {
     constructor(
         address[] memory _poolAddresses,
         string[] memory _tokenSymbolsForPaths,
-        address[][] memory _paths
+        address[][] memory _paths,
+        address _dexRouterAddress
     ) {
         poolAddresses = _poolAddresses;
         tokenSymbolsForPaths = _tokenSymbolsForPaths;
         paths = _paths;
+        dexRouterAddress = _dexRouterAddress;
 
         uint256 i = 0;
         uint256 eligibleSwapPathsBySymbolLen = _tokenSymbolsForPaths.length;
