@@ -119,6 +119,14 @@ contract OffsetHelper is OffsetHelperStorage {
         }
     }
 
+    // ----------------------------------------
+    //      Upgradable related functions
+    // ----------------------------------------
+
+    function initialize() external virtual initializer {
+        __Ownable_init_unchained();
+    }
+
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
