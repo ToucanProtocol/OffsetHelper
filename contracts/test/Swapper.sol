@@ -22,7 +22,7 @@ contract Swapper {
         uint256 eligibleSwapPathsLen = _paths.length;
         while (i < eligibleSwapPathsLen) {
             eligibleSwapPaths[_paths[i][0]] = _paths[i];
-            i += 1;
+            i++;
         }
     }
 

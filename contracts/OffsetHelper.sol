@@ -77,21 +77,21 @@ contract OffsetHelper is OffsetHelperStorage {
     );
 
     modifier onlyRedeemable(address _token) {
-        require(isRedeemable(_token), "Token not redeemable");
+        require(isRedeemable(_token), "Token not redeemable.");
 
         _;
     }
 
     modifier onlySwappable(address _token) {
-        require(isSwappable(_token), "Path doesn't yet exists.");
+        require(isSwappable(_token), "Path doesn't yet exist.");
 
         _;
     }
 
-    modifier nativeTokenChain() {
+    modifier isCelo() {
         require(
             block.chainid != CELO_MAINNET_CHAINID,
-            "The function is not available on this network."
+            "The function is not available on Celo."
         );
 
         _;
@@ -126,7 +126,7 @@ contract OffsetHelper is OffsetHelperStorage {
         while (i < eligibleSwapPathsBySymbolLen) {
             eligibleSwapPaths[_paths[i][0]] = _paths[i];
             eligibleSwapPathsBySymbol[_tokenSymbolsForPaths[i]] = _paths[i];
-            i += 1;
+            i++;
         }
     }
 
@@ -263,7 +263,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
-        nativeTokenChain
+        isCelo
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -299,7 +299,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
-        nativeTokenChain
+        isCelo
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -395,12 +395,8 @@ contract OffsetHelper is OffsetHelperStorage {
 
         require(tco2sLen == _amounts.length, "Arrays unequal");
 
-        uint256 i = 0;
-        while (i < tco2sLen) {
+        for (uint i = 0; i < tco2sLen; i++) {
             if (_amounts[i] == 0) {
-                unchecked {
-                    i++;
-                }
                 continue;
             }
             require(
@@ -411,10 +407,6 @@ contract OffsetHelper is OffsetHelperStorage {
             balances[msg.sender][_tco2s[i]] -= _amounts[i];
 
             IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
-
-            unchecked {
-                ++i;
-            }
         }
     }
 
@@ -518,7 +510,7 @@ contract OffsetHelper is OffsetHelperStorage {
     function swapExactOutETH(
         address _poolToken,
         uint256 _toAmount
-    ) public payable nativeTokenChain onlyRedeemable(_poolToken) {
+    ) public payable isCelo onlyRedeemable(_poolToken) {
         // create path & amounts
         // wrap the native token
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
@@ -553,7 +545,13 @@ contract OffsetHelper is OffsetHelperStorage {
      */
     function swapExactInETH(
         address _poolToken
-    ) public payable onlyRedeemable(_poolToken) returns (uint256 amountOut) {
+    )
+        public
+        payable
+        isCelo
+        onlyRedeemable(_poolToken)
+        returns (uint256 amountOut)
+    {
         // create path & amounts
         uint256 fromAmount = msg.value;
         // wrap the native token
@@ -704,7 +702,13 @@ contract OffsetHelper is OffsetHelperStorage {
     function calculateExpectedPoolTokenForETH(
         address _poolToken,
         uint256 _fromTokenAmount
-    ) public view onlyRedeemable(_poolToken) returns (uint256 amountOut) {
+    )
+        public
+        view
+        isCelo
+        onlyRedeemable(_poolToken)
+        returns (uint256 amountOut)
+    {
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
         (, uint256[] memory amounts) = calculateExactInSwap(
             fromToken,
