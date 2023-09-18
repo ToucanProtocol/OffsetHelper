@@ -4,9 +4,9 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OffsetHelperStorage is OwnableUpgradeable {
+contract OffsetHelperStorage is Ownable {
     // token symbol => token address
     mapping(address => address[]) public eligibleSwapPaths;
     mapping(string => address[]) public eligibleSwapPathsBySymbol;

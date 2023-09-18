@@ -56,8 +56,10 @@ import "./interfaces/IToucanContractRegistry.sol";
  */
 contract OffsetHelper is OffsetHelperStorage {
     using SafeERC20 for IERC20;
-    // Chain ID of Celo mainnet
+    // As Celo allows to pay the gas fees with other tokens than the native token,
+    // it's not possible ot use the swapETH (swap native tokens) functions.
     uint256 private constant CELO_MAINNET_CHAINID = 42220;
+    uint256 private constant ALFAJORES_MAINNET_CHAINID = 44787;
 
     /**
      * @notice Emitted upon successful redemption of TCO2 tokens from a Toucan
@@ -88,9 +90,10 @@ contract OffsetHelper is OffsetHelperStorage {
         _;
     }
 
-    modifier isCelo() {
+    modifier isNotCelo() {
         require(
-            block.chainid != CELO_MAINNET_CHAINID,
+            block.chainid != CELO_MAINNET_CHAINID &&
+                block.chainid != ALFAJORES_MAINNET_CHAINID,
             "The function is not available on Celo."
         );
 
@@ -121,28 +124,16 @@ contract OffsetHelper is OffsetHelperStorage {
         paths = _paths;
         dexRouterAddress = _dexRouterAddress;
 
-        uint256 i = 0;
         uint256 eligibleSwapPathsBySymbolLen = _tokenSymbolsForPaths.length;
-        while (i < eligibleSwapPathsBySymbolLen) {
+        for (uint256 i; i < eligibleSwapPathsBySymbolLen; i++) {
             eligibleSwapPaths[_paths[i][0]] = _paths[i];
             eligibleSwapPathsBySymbol[_tokenSymbolsForPaths[i]] = _paths[i];
-            i++;
         }
     }
 
     // The receive and fallback method are needed to fix the situation where transfering dust native tokens
     // in the native tokens  to token swap fails
     receive() external payable {}
-
-    fallback() external payable {}
-
-    // ----------------------------------------
-    //      Upgradable related functions
-    // ----------------------------------------
-
-    function initialize() external virtual initializer {
-        __Ownable_init_unchained();
-    }
 
     // ----------------------------------------
     //      Public functions
@@ -263,7 +254,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
-        isCelo
+        isNotCelo
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -299,7 +290,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
-        isCelo
+        isNotCelo
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap native tokens  for BCT / NCT
@@ -373,8 +364,11 @@ contract OffsetHelper is OffsetHelperStorage {
         // update balances
         balances[msg.sender][_fromToken] -= _amount;
         uint256 tco2sLen = tco2s.length;
-        for (uint256 index = 0; index < tco2sLen; index++) {
-            balances[msg.sender][tco2s[index]] += amounts[index];
+        for (uint256 i; i < tco2sLen; ) {
+            balances[msg.sender][tco2s[i]] += amounts[i];
+            unchecked {
+                i++;
+            }
         }
 
         emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
@@ -510,7 +504,7 @@ contract OffsetHelper is OffsetHelperStorage {
     function swapExactOutETH(
         address _poolToken,
         uint256 _toAmount
-    ) public payable isCelo onlyRedeemable(_poolToken) {
+    ) public payable isNotCelo onlyRedeemable(_poolToken) {
         // create path & amounts
         // wrap the native token
         address fromToken = eligibleSwapPathsBySymbol["WMATIC"][0];
@@ -548,7 +542,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         payable
-        isCelo
+        isNotCelo
         onlyRedeemable(_poolToken)
         returns (uint256 amountOut)
     {
@@ -705,7 +699,7 @@ contract OffsetHelper is OffsetHelperStorage {
     )
         public
         view
-        isCelo
+        isNotCelo
         onlyRedeemable(_poolToken)
         returns (uint256 amountOut)
     {

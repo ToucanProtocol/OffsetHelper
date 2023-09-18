@@ -55,8 +55,6 @@ describe("OffsetHelper", function () {
       routerAddress
     );
 
-    await offsetHelper.initialize();
-
     const bct = IToucanPoolToken__factory.connect(
       networkPoolAddress.BCT,
       owner
