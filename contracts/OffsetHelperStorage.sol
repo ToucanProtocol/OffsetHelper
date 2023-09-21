@@ -4,15 +4,18 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OffsetHelperStorage is OwnableUpgradeable {
+contract OffsetHelperStorage is Ownable {
     // token symbol => token address
-    mapping(string => address) public eligibleTokenAddresses;
-    address public contractRegistryAddress =
-        0x263fA1c180889b3a3f46330F32a4a23287E99FC9;
-    address public sushiRouterAddress =
-        0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
+    mapping(address => address[]) public eligibleSwapPaths;
+    mapping(string => address[]) public eligibleSwapPathsBySymbol;
+
+    address[] public poolAddresses;
+    string[] public tokenSymbolsForPaths;
+    address[][] public paths;
+    address public dexRouterAddress;
+
     // user => (token => amount)
     mapping(address => mapping(address => uint256)) public balances;
 }

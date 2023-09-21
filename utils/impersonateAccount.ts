@@ -1,7 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { parseEther } from "ethers/lib/utils";
 import { ethers, network } from "hardhat";
-import addresses from "./addresses";
 
 const impersonateAccount = async (
   oldAddress: string,
