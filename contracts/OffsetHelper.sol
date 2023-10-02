@@ -17,7 +17,7 @@ import "./interfaces/IToucanContractRegistry.sol";
  *
  * Retiring carbon tokens requires multiple steps and interactions with
  * Toucan Protocol's main contracts:
- * 1. Obtain a Toucan pool token e.g., NCT (by performing a token
+ * 1. Obtain a pool token e.g., NCT (by performing a token
  *    swap on a DEX).
  * 2. Redeem the pool token for a TCO2 token.
  * 3. Retire the TCO2 token.
@@ -359,7 +359,7 @@ contract OffsetHelper is OffsetHelperStorage {
         IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
 
         // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
-        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
+        (tco2s, amounts) = PoolTokenImplementation.redeemAuto(_amount);
 
         // update balances
         balances[msg.sender][_fromToken] -= _amount;
