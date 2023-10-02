@@ -137,6 +137,8 @@ describe("OffsetHelper", function () {
     return {
       offsetHelper,
       weth,
+      nct,
+      bct,
       testToken,
       usdc,
       owner,
@@ -587,7 +589,7 @@ describe("OffsetHelper", function () {
       });
 
       it(`should redeem ${name.toUpperCase()} from deposit`, async function () {
-        const { offsetHelper, owner, tokens } = await loadFixture(
+        const { offsetHelper, owner, bct, nct, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
@@ -614,8 +616,8 @@ describe("OffsetHelper", function () {
           await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
         await (
-          await offsetHelper.deposit(
-            networkPoolAddress[poolToken.name],
+          await (poolToken.name === "BCT" ? bct : nct).transfer(
+            offsetHelper.address,
             ONE_ETHER
           )
         ).wait();
@@ -702,7 +704,7 @@ describe("OffsetHelper", function () {
 
     for (const name of TOKEN_POOLS) {
       it(`should retire using an ${name.toUpperCase()} deposit`, async function () {
-        const { offsetHelper, owner, tokens } = await loadFixture(
+        const { offsetHelper, owner, bct, nct, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
         // extracting the the pool token for this loop
@@ -729,8 +731,8 @@ describe("OffsetHelper", function () {
           await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
         await (
-          await offsetHelper.deposit(
-            networkPoolAddress[poolToken.name],
+          await (poolToken.name === "BCT" ? bct : nct).transfer(
+            offsetHelper.address,
             ONE_ETHER
           )
         ).wait();
@@ -835,120 +837,6 @@ describe("OffsetHelper", function () {
     }
   });
 
-  describe("#deposit() and #withdraw()", function () {
-    for (const name of TOKEN_POOLS) {
-      it(`should fail to deposit because we have no ${name.toUpperCase()}`, async function () {
-        const { offsetHelper, addrs, tokens } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-        // extracting the the pool token for this loop
-        const poolToken = tokens[name];
-
-        await (
-          await poolToken
-            .token()
-            .connect(addrs[0])
-            .approve(offsetHelper.address, ONE_ETHER)
-        ).wait();
-
-        await expect(
-          offsetHelper
-            .connect(addrs[0])
-            .deposit(networkPoolAddress[poolToken.name], ONE_ETHER)
-        ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
-      });
-
-      it(`should deposit and withdraw 1.0 ${name.toUpperCase()}`, async function () {
-        const { offsetHelper, owner, tokens } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-        const poolToken = tokens[name];
-
-        const preDepositPoolTokenBalance = await poolToken
-          .token()
-          .balanceOf(owner.address);
-
-        await (
-          await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
-        ).wait();
-
-        await (
-          await offsetHelper.deposit(
-            networkPoolAddress[poolToken.name],
-            ONE_ETHER
-          )
-        ).wait();
-
-        await (
-          await offsetHelper.withdraw(
-            networkPoolAddress[poolToken.name],
-            ONE_ETHER
-          )
-        ).wait();
-
-        const postWithdrawPoolTokenBalance = await poolToken
-          .token()
-          .balanceOf(owner.address);
-
-        expect(formatEther(postWithdrawPoolTokenBalance)).to.be.eql(
-          formatEther(preDepositPoolTokenBalance)
-        );
-      });
-
-      it(`should fail to withdraw because we haven't deposited enough ${name.toUpperCase()}`, async function () {
-        const { offsetHelper, tokens } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-        const poolToken = tokens[name];
-
-        await (
-          await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
-        ).wait();
-
-        await (
-          await offsetHelper.deposit(
-            networkPoolAddress[poolToken.name],
-            ONE_ETHER
-          )
-        ).wait();
-
-        await expect(
-          offsetHelper.withdraw(
-            networkPoolAddress[poolToken.name],
-            parseEther("2.0")
-          )
-        ).to.be.revertedWith("Insufficient balance");
-      });
-
-      it(`should deposit 1.0 ${name.toUpperCase()}`, async function () {
-        const { offsetHelper, owner, tokens } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-        const poolToken = tokens[name];
-
-        await (
-          await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
-        ).wait();
-
-        await (
-          await offsetHelper.deposit(
-            networkPoolAddress[poolToken.name],
-            ONE_ETHER
-          )
-        ).wait();
-
-        expect(
-          formatEther(
-            await offsetHelper.balances(
-              owner.address,
-              networkPoolAddress[poolToken.name]
-            )
-          )
-        ).to.be.eql("1.0");
-      });
-    }
-  });
-
   describe("#swapExactOut{ETH,Token}() for pool token", function () {
     for (const name of TOKEN_POOLS) {
       it(`should swap native Token, e.g., MATIC for 1.0 ${name.toUpperCase()}`, async function () {
@@ -1034,7 +922,7 @@ describe("OffsetHelper", function () {
       });
 
       it(`should swap WETH for 1.0 ${name.toUpperCase()}`, async function () {
-        const { offsetHelper, weth, owner, tokens } = await loadFixture(
+        const { offsetHelper, weth, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
         const poolToken = tokens[name];
@@ -1064,16 +952,6 @@ describe("OffsetHelper", function () {
         expect(formatEther(balance)).to.be.eql(
           formatEther(initialBalance.add(ONE_ETHER))
         );
-
-        // I expect that the user should have his in-contract balance for pool token to be 1.0
-        expect(
-          formatEther(
-            await offsetHelper.balances(
-              owner.address,
-              networkPoolAddress[poolToken.name]
-            )
-          )
-        ).to.be.eql("1.0");
       });
     }
   });

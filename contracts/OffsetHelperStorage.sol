@@ -15,7 +15,4 @@ contract OffsetHelperStorage is Ownable {
     string[] public tokenSymbolsForPaths;
     address[][] public paths;
     address public dexRouterAddress;
-
-    // user => (token => amount)
-    mapping(address => mapping(address => uint256)) public balances;
 }
