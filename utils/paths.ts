@@ -1,7 +1,3 @@
-interface IfcPoolAddresses {
-  BCT: string;
-  NCT: string;
-}
 interface IfcTokenAddresses {
   mcUSD?: string[];
   cUSD?: string[];
@@ -15,12 +11,6 @@ interface IfcNetworkTokenAddresses {
   alfajores: IfcTokenAddresses;
   polygon: IfcTokenAddresses;
   mumbai: IfcTokenAddresses;
-}
-interface IfcNetworkPoolAddresses {
-  celo: IfcPoolAddresses;
-  alfajores: IfcPoolAddresses;
-  polygon: IfcPoolAddresses;
-  mumbai: IfcPoolAddresses;
 }
 
 const paths: IfcNetworkTokenAddresses = {
@@ -53,6 +43,11 @@ const paths: IfcNetworkTokenAddresses = {
     ],
     CELO: [
       "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9",
+      "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+      "0x71DB38719f9113A36e14F409bAD4F07B58b4730b",
+    ],
+    WETH: [
+      "0x48D380cb7de1da5d4cA0DAA696480943fD93B9fF",
       "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
       "0x71DB38719f9113A36e14F409bAD4F07B58b4730b",
     ],

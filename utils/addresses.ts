@@ -1,3 +1,14 @@
+interface IfcPoolAddresses {
+  BCT: string;
+  NCT: string;
+}
+interface IfcNetworkPoolAddresses {
+  celo: IfcPoolAddresses;
+  alfajores: IfcPoolAddresses;
+  polygon: IfcPoolAddresses;
+  mumbai: IfcPoolAddresses;
+}
+
 interface IfcOneNetworkAddresses {
   BCT: string;
   NCT: string;
