@@ -325,7 +325,11 @@ contract OffsetHelper is OffsetHelperStorage {
         uint256 _amountToOffset
     ) public returns (address[] memory tco2s, uint256[] memory amounts) {
         // deposit pool token from user to this contract
-        deposit(_poolToken, _amountToOffset);
+        IERC20(_poolToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amountToOffset
+        );
 
         // redeem BCT / NCT for TCO2s
         (tco2s, amounts) = autoRedeem(_poolToken, _amountToOffset);
@@ -351,7 +355,7 @@ contract OffsetHelper is OffsetHelperStorage {
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         require(
-            balances[msg.sender][_fromToken] >= _amount,
+            IERC20(_fromToken).balanceOf(address(this)) >= _amount,
             "Insufficient NCT/BCT balance"
         );
 
@@ -360,16 +364,6 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
         (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
-
-        // update balances
-        balances[msg.sender][_fromToken] -= _amount;
-        uint256 tco2sLen = tco2s.length;
-        for (uint256 i; i < tco2sLen; ) {
-            balances[msg.sender][tco2s[i]] += amounts[i];
-            unchecked {
-                i++;
-            }
-        }
 
         emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
     }
@@ -394,11 +388,9 @@ contract OffsetHelper is OffsetHelperStorage {
                 continue;
             }
             require(
-                balances[msg.sender][_tco2s[i]] >= _amounts[i],
+                IERC20(_tco2s[i]).balanceOf(address(this)) >= _amounts[i],
                 "Insufficient TCO2 balance"
             );
-
-            balances[msg.sender][_tco2s[i]] -= _amounts[i];
 
             IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
         }
@@ -439,9 +431,6 @@ contract OffsetHelper is OffsetHelperStorage {
         if (amounts[0] < amountIn) {
             IERC20(_fromToken).approve(dexRouterAddress, 0);
         }
-
-        // update balances
-        balances[msg.sender][_poolToken] += _toAmount;
     }
 
     /**
@@ -489,9 +478,6 @@ contract OffsetHelper is OffsetHelperStorage {
             block.timestamp
         );
         amountOut = amounts[len - 1];
-
-        // update balances
-        balances[msg.sender][_poolToken] += amountOut;
     }
 
     /**
@@ -524,9 +510,6 @@ contract OffsetHelper is OffsetHelperStorage {
 
             require(success, "Failed to send surplus back");
         }
-
-        // update balances
-        balances[msg.sender][_poolToken] += _toAmount;
     }
 
     /**
@@ -559,34 +542,6 @@ contract OffsetHelper is OffsetHelperStorage {
             value: fromAmount
         }(0, path, address(this), block.timestamp);
         amountOut = amounts[len - 1];
-
-        // update balances
-        balances[msg.sender][_poolToken] += amountOut;
-    }
-
-    /**
-     * @notice Allow users to withdraw tokens they have deposited.
-     */
-    function withdraw(address _erc20Addr, uint256 _amount) public {
-        require(
-            balances[msg.sender][_erc20Addr] >= _amount,
-            "Insufficient balance"
-        );
-
-        IERC20(_erc20Addr).safeTransfer(msg.sender, _amount);
-        balances[msg.sender][_erc20Addr] -= _amount;
-    }
-
-    /**
-     * @notice Allow users to deposit BCT / NCT.
-     * @dev Needs to be approved
-     */
-    function deposit(
-        address _erc20Addr,
-        uint256 _amount
-    ) public onlyRedeemable(_erc20Addr) {
-        IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
-        balances[msg.sender][_erc20Addr] += _amount;
     }
 
     // ----------------------------------------
