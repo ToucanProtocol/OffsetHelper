@@ -1,5 +1,3 @@
-export default function Home() {
-return (
 <div>
 <div className="relative flex flex-col h-16 justify-between">
 <h1>Welcome to the OffsetHelper Example Frontend</h1>
@@ -31,7 +29,7 @@ within one transaction:
                 href="/autoOffsetPoolToken"
                 target="_blank"
                 rel="noopener noreferrer"
-              > - autoOffsetPoolToken():
+              > autoOffsetPoolToken()
 </a>
 </code>{" "}
 if the user already owns a Toucan pool token such as BCT or NCT,
@@ -42,7 +40,7 @@ if the user already owns a Toucan pool token such as BCT or NCT,
                 href="/autoOffsetExactOutToken"
                 target="_blank"
                 rel="noopener noreferrer"
-              > - autoOffsetExactOutToken():
+              > autoOffsetExactOutToken()
 </a>
 </code>{" "}
 if the user would like to perform a retirement using an ERC20 token
@@ -55,7 +53,7 @@ retire,
                 href="/autoOffsetExactInToken"
                 target="_blank"
                 rel="noopener noreferrer"
-              > - autoOffsetExactInToken():
+              > autoOffsetExactInToken()
 </a>
 </code>{" "}
 if the user would like to perform a retirement using an ERC20 token
@@ -68,7 +66,7 @@ into TCO2s.
                 href="/autoOffsetExactOutETH"
                 target="_blank"
                 rel="noopener noreferrer"
-              > - autoOffsetExactOutETH():
+              > autoOffsetExactOutETH()
 </a>
 </code>{" "}
 if the user would like to perform a retirement using MATIC,
@@ -80,7 +78,7 @@ specifying the exact amount of TCO2s to retire,
                 href="/autoOffsetExactInETH"
                 target="_blank"
                 rel="noopener noreferrer"
-              > - autoOffsetExactInETH():
+              > autoOffsetExactInETH()
 </a>
 </code>{" "}
 if the user would like to perform a retirement using MATIC, swapping
@@ -89,5 +87,3 @@ all sent MATIC into TCO2s,
 </ul>
 </div>
 </div>
-);
-}

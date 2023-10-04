@@ -50,7 +50,9 @@
     "@openzeppelin/contracts": "^4.5.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "@wagmi/chains": "^1.8.0",
     "i": "^0.3.7",
+    "i18n-js": "^4.3.2",
     "solc": "^0.8.12",
     "urql": "^2.2.0"
   }

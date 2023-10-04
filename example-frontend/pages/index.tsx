@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <div>
+    <div className="h-screen overflow-scroll">
       <div className="relative flex flex-col h-16 justify-between">
         <h1 className="text-xl underline">
           Welcome to the OffsetHelper Example Frontend
@@ -34,7 +34,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                - autoOffsetPoolToken():
+                autoOffsetPoolToken()
               </a>
             </code>{" "}
             if the user already owns a Toucan pool token such as BCT or NCT,
@@ -46,7 +46,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                - autoOffsetExactOutToken():
+                autoOffsetExactOutToken()
               </a>
             </code>{" "}
             if the user would like to perform a retirement using an ERC20 token
@@ -60,7 +60,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                - autoOffsetExactInToken():
+                autoOffsetExactInToken()
               </a>
             </code>{" "}
             if the user would like to perform a retirement using an ERC20 token
@@ -74,7 +74,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                - autoOffsetExactOutETH():
+                autoOffsetExactOutETH()
               </a>
             </code>{" "}
             if the user would like to perform a retirement using MATIC,
@@ -87,7 +87,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                - autoOffsetExactInETH():
+                autoOffsetExactInETH()
               </a>
             </code>{" "}
             if the user would like to perform a retirement using MATIC, swapping
