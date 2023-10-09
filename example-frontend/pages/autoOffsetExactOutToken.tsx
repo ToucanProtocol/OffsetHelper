@@ -1,15 +1,15 @@
 import { useProvider, useSigner } from "wagmi";
 import { useState } from "react";
 import { ethers } from "ethers";
-import { FormatTypes, Interface, parseUnits } from "ethers/lib/utils";
+import { FormatTypes, Interface, parseEther } from "ethers/lib/utils";
 import OffsetHelper from "../../deployments/polygon/OffsetHelper.json";
 import ERC20 from "../abis/ERC20.json";
 
 export default function AutoOffsetExactOutToken() {
   // input data for the autoOffsetExactOutToken function
   const poolAddress = "0xD838290e877E0188a4A44700463419ED96c16107"; // Polygon - NCT
-  const depositedToken = "0x2791Bca1f2de4661ED88åA30C99A7a9449Aa84174"; // Polygon - USDC
-  const amount = parseUnits("0.0001", 6);
+  const depositedToken = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"; // Polygon - USDC
+  const amount = parseEther("0.0001");
   const [tx, setTx] = useState("");
 
   // get signer & provider
