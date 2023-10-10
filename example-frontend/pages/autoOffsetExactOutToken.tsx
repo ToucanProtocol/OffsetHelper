@@ -8,7 +8,9 @@ import ERC20 from "../abis/ERC20.json";
 export default function AutoOffsetExactOutToken() {
   // input data for the autoOffsetExactOutToken function
   const poolAddress = "0xD838290e877E0188a4A44700463419ED96c16107"; // Polygon - NCT
-  const depositedToken = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"; // Polygon - USDC
+  // const depositedToken = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"; // Polygon - WMATIC
+  // const depositedToken = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"; // Polygon - WETH
+  const depositedToken = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // Polygon - USDC
   const amount = parseEther("0.0001");
   const [tx, setTx] = useState("");
 

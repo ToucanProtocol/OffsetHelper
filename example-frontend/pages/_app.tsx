@@ -21,7 +21,7 @@ const { chains, provider } = configureChains(
       rpc: (chain) =>
         chain.id === 80001 || chain.id === 137
           ? { http: "https://rpc.ankr.com/polygon" }
-          : { http: "https://forno.celo.org" },
+          : { http: "https://rpc.ankr.com/celo" },
     }),
   ]
 );
