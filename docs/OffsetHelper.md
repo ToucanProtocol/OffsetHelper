@@ -148,7 +148,7 @@ function initialize() external virtual
 function autoOffsetExactOutToken(address _depositedToken, address _poolToken, uint256 _amountToOffset) public returns (address[] tco2s, uint256[] amounts)
 ```
 
-Retire carbon credits using the lowest quality (oldest) TCO2
+Retire carbon credits using the oldest TCO2
 tokens available from the specified Toucan token pool by sending ERC20
 tokens (USDC, WETH, WMATIC). Use `calculateNeededTokenAmount` first in
 order to find out how much of the ERC20 token is required to retire the
@@ -157,7 +157,7 @@ specified quantity of TCO2.
 This function:
 
 1. Swaps the ERC20 token sent to the contract for the specified pool token.
-2. Redeems the pool token for the poorest quality TCO2 tokens available.
+2. Redeems the pool token for the oldest TCO2 tokens available.
 3. Retires the TCO2 tokens.
 
 Note: The client must approve the ERC20 token that is sent to the contract.
@@ -187,7 +187,7 @@ token._
 function autoOffsetExactInToken(address _fromToken, uint256 _amountToSwap, address _poolToken) public returns (address[] tco2s, uint256[] amounts)
 ```
 
-Retire carbon credits using the lowest quality (oldest) TCO2
+Retire carbon credits using the oldest TCO2
 tokens available from the specified Toucan token pool by sending ERC20
 tokens (USDC, WETH, WMATIC). All provided token is consumed for
 offsetting.
@@ -195,7 +195,7 @@ offsetting.
 This function:
 
 1. Swaps the ERC20 token sent to the contract for the specified pool token.
-2. Redeems the pool token for the poorest quality TCO2 tokens available.
+2. Redeems the pool token for the oldest TCO2 tokens available.
 3. Retires the TCO2 tokens.
 
 Note: The client must approve the ERC20 token that is sent to the contract.
@@ -225,7 +225,7 @@ token._
 function autoOffsetExactOutETH(address _poolToken, uint256 _amountToOffset) public payable returns (address[] tco2s, uint256[] amounts)
 ```
 
-Retire carbon credits using the lowest quality (oldest) TCO2
+Retire carbon credits using the oldest TCO2
 tokens available from the specified Toucan token pool by sending MATIC.
 Use `calculateNeededETHAmount()` first in order to find out how much
 MATIC is required to retire the specified quantity of TCO2.
@@ -233,7 +233,7 @@ MATIC is required to retire the specified quantity of TCO2.
 This function:
 
 1. Swaps the Matic sent to the contract for the specified pool token.
-2. Redeems the pool token for the poorest quality TCO2 tokens available.
+2. Redeems the pool token for the oldest TCO2 tokens available.
 3. Retires the TCO2 tokens.
 
 _If the user sends much MATIC, the leftover amount will be sent back
@@ -259,14 +259,14 @@ to the user._
 function autoOffsetExactInETH(address _poolToken) public payable returns (address[] tco2s, uint256[] amounts)
 ```
 
-Retire carbon credits using the lowest quality (oldest) TCO2
+Retire carbon credits using the oldest TCO2
 tokens available from the specified Toucan token pool by sending MATIC.
 All provided MATIC is consumed for offsetting.
 
 This function:
 
 1. Swaps the Matic sent to the contract for the specified pool token.
-2. Redeems the pool token for the poorest quality TCO2 tokens available.
+2. Redeems the pool token for the oldest TCO2 tokens available.
 3. Retires the TCO2 tokens.
 
 #### Parameters
@@ -288,12 +288,12 @@ This function:
 function autoOffsetPoolToken(address _poolToken, uint256 _amountToOffset) public returns (address[] tco2s, uint256[] amounts)
 ```
 
-Retire carbon credits using the lowest quality (oldest) TCO2
+Retire carbon credits using the oldest TCO2
 tokens available by sending Toucan pool tokens, for example, BCT or NCT.
 
 This function:
 
-1. Redeems the pool token for the poorest quality TCO2 tokens available.
+1. Redeems the pool token for the oldest TCO2 tokens available.
 2. Retires the TCO2 tokens.
 
 Note: The client must approve the pool token that is sent.

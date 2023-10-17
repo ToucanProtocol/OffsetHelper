@@ -17,7 +17,7 @@ import "./interfaces/IToucanContractRegistry.sol";
  *
  * Retiring carbon tokens requires multiple steps and interactions with
  * Toucan Protocol's main contracts:
- * 1. Obtain a Toucan pool token e.g., NCT (by performing a token
+ * 1. Obtain a pool token e.g., NCT (by performing a token
  *    swap on a DEX).
  * 2. Redeem the pool token for a TCO2 token.
  * 3. Retire the TCO2 token.
@@ -66,7 +66,7 @@ contract OffsetHelper is OffsetHelperStorage {
      * pool token e.g., NCT.
      *
      * @param sender The sender of the transaction
-     * @param poolToken The address of the Toucan pool token used in the
+     * @param poolToken The address of the pool token used in the
      * redemption,  e.g., NCT
      * @param tco2s An array of the TCO2 addresses that were redeemed
      * @param amounts An array of the amounts of each TCO2 that were redeemed
@@ -140,7 +140,7 @@ contract OffsetHelper is OffsetHelperStorage {
     // ----------------------------------------
 
     /**
-     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * @notice Retire carbon credits using the oldest TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
      * tokens (cUSD, USDC, WETH, WMATIC). Use `calculateNeededTokenAmount` first in
      * order to find out how much of the ERC20 token is required to retire the
@@ -148,18 +148,18 @@ contract OffsetHelper is OffsetHelperStorage {
      *
      * This function:
      * 1. Swaps the ERC20 token sent to the contract for the specified pool token.
-     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 2. Redeems the pool token for the oldest TCO2 tokens available.
      * 3. Retires the TCO2 tokens.
      *
      * Note: The client must approve the ERC20 token that is sent to the contract.
      *
-     * @dev When automatically redeeming pool tokens for the lowest quality
+     * @dev When automatically redeeming pool tokens for the oldest ones
      * TCO2s there are no fees and you receive exactly 1 TCO2 token for 1 pool
      * token.
      *
      * @param _fromToken The address of the ERC20 token that the user sends
      * (e.g., cUSD, cUSD, USDC, WETH, WMATIC)
-     * @param _poolToken The address of the Toucan pool token that the
+     * @param _poolToken The address of the pool token that the
      * user wants to use,  e.g., NCT
      * @param _amountToOffset The amount of TCO2 to offset
      *
@@ -182,25 +182,26 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * @notice Retire carbon credits using the oldest TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
      * tokens (cUSD, USDC, WETH, WMATIC). All provided token is consumed for
-     * offsetting.
+     * offsetting. Use `calculateExpectedPoolTokenForToken()` to calculate the expected amount
+     * of Pool token that can be acquired by swapping the provided amount of ERC20 token.
      *
      * This function:
      * 1. Swaps the ERC20 token sent to the contract for the specified pool token.
-     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 2. Redeems the pool token for the oldest TCO2 tokens available.
      * 3. Retires the TCO2 tokens.
      *
      * Note: The client must approve the ERC20 token that is sent to the contract.
      *
-     * @dev When automatically redeeming pool tokens for the lowest quality
+     * @dev When automatically redeeming pool tokens for the oldest ones
      * TCO2s there are no fees and you receive exactly 1 TCO2 token for 1 pool
      * token.
      *
      * @param _fromToken The address of the ERC20 token that the user sends
      * (e.g., cUSD, cUSD, USDC, WETH, WMATIC)
-     * @param _poolToken The address of the Toucan pool token that the
+     * @param _poolToken The address of the pool token that the
      * user wants to use,  e.g., NCT
      * @param _amountToSwap The amount of ERC20 token to swap into Toucan pool
      * token. Full amount will be used for offsetting.
@@ -228,14 +229,14 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * @notice Retire carbon credits using the oldest TCO2
      * tokens available from the specified Toucan token pool by sending native tokens e.g., MATIC.
      * Use `calculateNeededETHAmount()` first in order to find out how much
      * native tokens are required to retire the specified quantity of TCO2.
      *
      * This function:
      * 1. Swaps the Matic sent to the contract for the specified pool token.
-     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 2. Redeems the pool token for the oldest TCO2 tokens available.
      * 3. Retires the TCO2 tokens.
      *
      * @dev If the user sends too much native tokens , the leftover amount will be sent back
@@ -268,13 +269,15 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * @notice Retire carbon credits using the oldest TCO2
      * tokens available from the specified Toucan token pool by sending native tokens e.g., MATIC.
      * All provided native tokens  is consumed for offsetting.
+     * Use `calculateExpectedPoolTokenForETH()` to calculate the expected amount of
+     * Pool token that can be acquired by swapping the provided amount of native tokens e.g., MATIC.
      *
      * This function:
      * 1. Swaps the Matic sent to the contract for the specified pool token.
-     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 2. Redeems the pool token for the oldest TCO2 tokens available.
      * 3. Retires the TCO2 tokens.
      *
      * @dev This function is only available on Polygon, not on Celo.
@@ -304,11 +307,11 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
-     * tokens available by sending Toucan pool tokens,  e.g., NCT.
+     * @notice Retire carbon credits using the oldest TCO2
+     * tokens available by sending pool tokens,  e.g., NCT.
      *
      * This function:
-     * 1. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 1. Redeems the pool token for the oldest TCO2 tokens available.
      * 2. Retires the TCO2 tokens.
      *
      * Note: The client must approve the pool token that is sent.
@@ -396,6 +399,14 @@ contract OffsetHelper is OffsetHelperStorage {
         }
     }
 
+    /**
+     * @notice Swap eligible ERC20 tokens for pool tokens (BCT/NCT) on SushiSwap
+     * @dev Needs to be approved on the client side
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _poolToken The address of the pool token to swap for,
+     *  e.g., NCT
+     * @param _toAmount The required amount of the pool token (NCT/BCT)
+     */
     function swapExactOutToken(
         address _fromToken,
         address _poolToken,
@@ -434,14 +445,14 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Swap eligible ERC20 tokens for Toucan pool tokens (BCT/NCT) on
+     * @notice Swap eligible ERC20 tokens for pool tokens (BCT/NCT) on
      * SushiSwap. All provided ERC20 tokens will be swapped.
      * @dev Needs to be approved on the client side.
      * @param _fromToken The address of the ERC20 token used for the swap
      * @param _poolToken The address of the pool token to swap for,
      * @param _fromAmount The amount of ERC20 token to swap
      *  e.g., NCT
-     * @return amountOut Resulting amount of Toucan pool token that got acquired for the
+     * @return amountOut Resulting amount of pool token that got acquired for the
      * swapped ERC20 tokens.
      */
     function swapExactInToken(
@@ -481,11 +492,11 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Swap native tokens e.g., MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap.
+     * @notice Swap native tokens e.g., MATIC for pool tokens (BCT/NCT) on SushiSwap.
      * Remaining native tokens  that was not consumed by the swap is returned.
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
-     * @param _toAmount The required amount of the Toucan pool token (NCT/BCT)
+     * @param _toAmount The required amount of the pool token (NCT/BCT)
      */
     function swapExactOutETH(
         address _poolToken,
@@ -513,11 +524,11 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Swap native tokens e.g., MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap. All
+     * @notice Swap native tokens e.g., MATIC for pool tokens (BCT/NCT) on SushiSwap. All
      * provided native tokens  will be swapped.
      * @param _poolToken The address of the pool token to swap for,
      *  e.g., NCT
-     * @return amountOut Resulting amount of Toucan pool token that got acquired for the
+     * @return amountOut Resulting amount of pool token that got acquired for the
      * swapped native tokens .
      */
     function swapExactInETH(
@@ -550,7 +561,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
     /**
      * @notice Return how much of the specified ERC20 token is required in
-     * order to swap for the desired amount of a Toucan pool token, for
+     * order to swap for the desired amount of a pool token, for
      * example,  e.g., NCT.
      *
      * @param _fromToken The address of the ERC20 token used for the swap
@@ -581,7 +592,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
     /**
      * @notice Return how much native tokens e.g, MATIC is required in order to swap for the
-     * desired amount of a Toucan pool token,  e.g., NCT.
+     * desired amount of a pool token,  e.g., NCT.
      * @param _poolToken The address of the pool token to swap for, for
      * example, NCT
      * @param _toAmount The desired amount of pool token to receive
@@ -602,7 +613,7 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * @notice Calculates the expected amount of pool token that can be
      * acquired by swapping the provided amount of ERC20 token.
      *
      * @param _fromToken The address of the ERC20 token used for the swap
@@ -631,16 +642,7 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     /**
-     * @notice Swap eligible ERC20 tokens for Toucan pool tokens (BCT/NCT) on SushiSwap
-     * @dev Needs to be approved on the client side
-     * @param _fromToken The address of the ERC20 token used for the swap
-     * @param _poolToken The address of the pool token to swap for,
-     *  e.g., NCT
-     * @param _toAmount The required amount of the Toucan pool token (NCT/BCT)
-     */
-
-    /**
-     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * @notice Calculates the expected amount of pool token that can be
      * acquired by swapping the provided amount of native tokens e.g., MATIC.
      *
      * @param _fromTokenAmount The amount of native tokens  to swap
@@ -753,9 +755,9 @@ contract OffsetHelper is OffsetHelperStorage {
     // ----------------------------------------
 
     /**
-     * @notice Checks whether an address is a Toucan pool token address
+     * @notice Checks whether an address is a pool token address
      * @param _erc20Address address of token to be checked
-     * @return True if the address is a Toucan pool token address
+     * @return True if the address is a pool token address
      */
     function isRedeemable(address _erc20Address) private view returns (bool) {
         for (uint i = 0; i < poolAddresses.length; i++) {
