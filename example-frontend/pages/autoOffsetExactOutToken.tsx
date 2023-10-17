@@ -34,6 +34,10 @@ export default function AutoOffsetExactOutToken() {
     signer || provider
   );
   const offset = async () => {
+    if (!signer) {
+      alert("Please Connect your Wallet.");
+    }
+
     try {
       // determine how much of the ERC20 token must be sent
       const amountOut = await offsetHelper.calculateNeededTokenAmount(

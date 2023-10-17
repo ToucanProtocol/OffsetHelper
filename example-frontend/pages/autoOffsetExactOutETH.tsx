@@ -21,6 +21,10 @@ export default function AutoOffsetExactOutETH() {
     signer || provider
   );
   const offset = async () => {
+    if (!signer) {
+      alert("Please Connect your Wallet.");
+    }
+
     try {
       // determine how much native tokens e.g., MATIC, token must be sent
       const amountOut = await offsetHelper.calculateNeededETHAmount(

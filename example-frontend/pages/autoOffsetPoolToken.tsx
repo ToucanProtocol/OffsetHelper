@@ -29,6 +29,10 @@ export default function AutoOffsetPoolToken() {
   );
 
   const offset = async () => {
+    if (!signer) {
+      alert("Please Connect your Wallet.");
+    }
+
     try {
       // approve spending of pool tokens
       await (await poolToken.approve(offsetHelper.address, amount)).wait();

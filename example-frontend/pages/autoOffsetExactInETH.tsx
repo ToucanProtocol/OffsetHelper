@@ -22,6 +22,10 @@ export default function AutoOffsetExactInETH() {
   );
   // retire carbon credits using native tokens e.g., MATIC, specifying the exact amount of TCO2s to retire (only on Polygon, not on Celo),
   const offset = async () => {
+    if (!signer) {
+      alert("Please Connect your Wallet.");
+    }
+
     try {
       const result = await offsetHelper.autoOffsetExactInETH(poolAddress, {
         value: amount,

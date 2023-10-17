@@ -31,6 +31,10 @@ export default function AutoOffsetExactInToken() {
     signer || provider
   );
   const offset = async () => {
+    if (!signer) {
+      alert("Please Connect your Wallet.");
+    }
+
     try {
       // approve spending of deposited tokens
       await (
