@@ -366,7 +366,7 @@ contract OffsetHelper is OffsetHelperStorage {
         IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
 
         // auto redeem pool token for TCO2; will transfer automatically picked TCO2 to this contract
-        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
+        (tco2s, amounts) = PoolTokenImplementation.redeemAuto(_amount);
 
         emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
     }
