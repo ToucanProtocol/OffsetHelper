@@ -85,7 +85,7 @@ const config: HardhatUserConfig = {
         network: "celo",
         chainId: 42220,
         urls: {
-          apiURL: `https://api.celoscan.io/api`,
+          apiURL: "https://api.celoscan.io/api",
           browserURL: "https://celoscan.io/",
         },
       },
@@ -93,7 +93,7 @@ const config: HardhatUserConfig = {
         network: "alfajores",
         chainId: 44787,
         urls: {
-          apiURL: `https://api.celoscan.io/api`,
+          apiURL: "https://api-alfajores.celoscan.io/api",
           browserURL: "https://celoscan.io/",
         },
       },
