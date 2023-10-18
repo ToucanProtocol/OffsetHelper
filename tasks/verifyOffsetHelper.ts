@@ -1,7 +1,7 @@
 import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import paths from "../utils/paths";
-import { poolAddresses } from "../utils/addresses";
+import { poolAddresses, routerAddresses } from "../utils/addresses";
 
 task("verify:offsetHelper", "Verifies the OffsetHelper")
   .addParam("address", "The OffsetHelper address")

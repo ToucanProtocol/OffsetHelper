@@ -1,4 +1,4 @@
-interface IfcOneNetworkAddresses {
+interface INetworkTokenAddresses {
   BCT: string;
   NCT: string;
   mcUSD?: string;
@@ -8,14 +8,26 @@ interface IfcOneNetworkAddresses {
   USDC?: string;
   WMATIC?: string;
 }
-interface IfcAddresses {
-  celo: IfcOneNetworkAddresses;
-  alfajores: IfcOneNetworkAddresses;
-  polygon: IfcOneNetworkAddresses;
-  mumbai: IfcOneNetworkAddresses;
+interface INetworkAddresses {
+  celo: INetworkTokenAddresses;
+  alfajores: INetworkTokenAddresses;
+  polygon: INetworkTokenAddresses;
+  mumbai: INetworkTokenAddresses;
 }
 
-const addresses: IfcAddresses = {
+interface IPoolAddresses {
+  BCT: string;
+  NCT: string;
+}
+
+interface INetworkPoolAddresses {
+  celo: IPoolAddresses;
+  alfajores: IPoolAddresses;
+  polygon: IPoolAddresses;
+  mumbai: IPoolAddresses;
+}
+
+const addresses: INetworkAddresses = {
   celo: {
     BCT: "0x0CcB0071e8B8B716A2a5998aB4d97b83790873Fe",
     NCT: "0x02De4766C272abc10Bc88c220D214A26960a7e92",
@@ -47,7 +59,7 @@ const addresses: IfcAddresses = {
   },
 };
 
-export const poolAddresses: IfcNetworkPoolAddresses = {
+export const poolAddresses: INetworkPoolAddresses = {
   celo: {
     BCT: "0x0CcB0071e8B8B716A2a5998aB4d97b83790873Fe",
     NCT: "0x02De4766C272abc10Bc88c220D214A26960a7e92",
